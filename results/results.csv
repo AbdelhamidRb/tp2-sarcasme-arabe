@@ -2,3 +2,7 @@ modele,preprocessing,graine,seuil,pr_auc_val,f1_sarc_val,f1_sarc_val_seuil_0_5,a
 TF-IDF + LogisticRegression (class_weight=balanced),"dedup train + espaces normalisés; mots(1-2) + char_wb(2-5), min_df=2",42,0.42,0.5217,0.5153,0.5041,0.7721,11217,1255,3.39,186332,sklearn=1.6.1; torch=2.11.0+cpu; transformers=5.18.0,seuil et F1 choisis sur val (optimiste) ; test non utilisé
 TF-IDF + LogisticRegression (class_weight=balanced),"dedup train + espaces normalisés; mots(1-2) + char_wb(2-5), min_df=2",42,0.42,0.5217,0.5153,0.5041,0.7721,11217,1255,4.81,186332,sklearn=1.6.1; torch=2.11.0+cu130; transformers=5.18.0,seuil et F1 choisis sur val (optimiste) ; test non utilisé
 TF-IDF + LogisticRegression (class_weight=balanced),"dedup train + espaces normalisés; mots(1-2) + char_wb(2-5), min_df=2",42,0.42,0.5217,0.5153,0.5041,0.7721,11217,1255,4.81,186332,sklearn=1.6.1; torch=2.11.0+cu130; transformers=5.18.0,seuil et F1 choisis sur val (optimiste) ; test non utilisé
+mDeBERTa NLI zero-shot (français),dedup train,42,0.75,0.3495,0.4119,,,,,,,,"zero-shot, seuil sur val"
+"CAMeL sentiment, règle négatif=>sarcasme",dedup train,42,,,0.4656,,,,,,,,contamination possible (ArSarcasm v1 construit sur ASTD/SemEval) ; non vérifiée
+mDeBERTa NLI zero-shot (français),dedup train,42,0.75,0.3495,0.4119,,,,,,,,"zero-shot, seuil sur val"
+"CAMeL sentiment, règle négatif=>sarcasme",dedup train,42,,,0.4656,,,,,,,,contamination possible (ArSarcasm v1 construit sur ASTD/SemEval) ; non vérifiée
