@@ -10,3 +10,6 @@ C3. Mini-Transformer (avec encodage pos),dedup train + vocab min_freq=2 + clean_
 C3. Mini-Transformer (SANS encodage pos),dedup train + vocab min_freq=2 + clean_str aravec,42,0.26,0.4876,0.517,0.4022,0.7737,11217.0,1255.0,12.27,5216546.0,,"seuil sur val, C3 Transformer pos=False (Ablation)"
 C2. AttentionBiLSTM (Perte pondérée),dedup train + vocab min_freq=2 + clean_str aravec,42,0.6,0.468,0.5106,0.4764,0.7968,11217.0,1255.0,18.52,5370146.0,,"seuil sur val, déséquilibre perte pondérée"
 C2. AttentionBiLSTM (Sur-échantillonnage train),dedup train + vocab min_freq=2 + clean_str aravec,42,0.22,0.4489,0.4906,0.4576,0.7618,18572.0,1255.0,23.94,5370146.0,,"seuil sur val, déséquilibre sur-échantillonnage train"
+D1. AraBERT gelé [CLS] + LogisticRegression,arabert_prep + [CLS] 768d,42,0.64,0.6086,0.6166,0.6,0.8454,11217.0,1255.0,9.44,769.0,,"seuil sur val, encodeur arabert gelé"
+D1. AraBERT gelé [Mean] + LogisticRegression,arabert_prep + mean pooling 768d,42,0.66,0.6184,0.6138,0.6046,0.8486,11217.0,1255.0,4.25,769.0,,"seuil sur val, encodeur arabert gelé"
+D2. AraBERT gelé + BiLSTM + Attention custom,arabert_prep + tokens 768d,42,0.32,0.6976,0.6652,0.5899,0.8821,11217.0,1255.0,190.29,936578.0,,"seuil sur val, AraBERT gelé + BiLSTM attention custom"

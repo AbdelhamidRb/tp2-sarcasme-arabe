@@ -79,10 +79,17 @@ Métrique principale : **F1 de la classe sarcastique** ($F1_{\text{sarc}}$). L'a
 | **C2. BiLSTM + Attention custom** | vocab min_freq=2 + clean_str | 0.26 | 0.4910 | 0.5099 | 0.4084 | 12.1s | 5.37M | Pooling attentionnel du cours |
 | **C3. Mini-Transformer (avec pos)** | vocab min_freq=2 + clean_str | 0.28 | 0.4818 | 0.4963 | 0.3942 | 12.6s | 5.22M | Transformer 2 couches, 4 têtes |
 | **C3. Mini-Transformer (SANS pos)** | vocab min_freq=2 + clean_str | 0.26 | 0.4876 | **0.5170** | 0.4022 | 12.3s | 5.22M | **Ablation encodage positionnel** |
-| **C2. AttentionBiLSTM (Perte pondérée)** | vocab min_freq=2 + clean_str | 0.60 | 0.4680 | 0.5106 | **0.4764** | 18.5s | 5.37M | Poids classe = 4.81 |
+| **C2. AttentionBiLSTM (Perte pondérée)** | vocab min_freq=2 + clean_str | 0.60 | 0.4680 | 0.5106 | 0.4764 | 18.5s | 5.37M | Poids classe = 4.81 |
 | **C2. AttentionBiLSTM (Sur-échantillon)**| vocab min_freq=2 + clean_str | 0.22 | 0.4489 | 0.4906 | 0.4576 | 23.9s | 5.37M | Train équilibré 50/50 |
+| **D1. AraBERT gelé [CLS] + LogReg** | arabert_prep + [CLS] 768d | 0.64 | 0.6086 | 0.6166 | 0.6000 | 9.4s | **769** | Extraction CLS simple |
+| **D1. AraBERT gelé [Mean] + LogReg**| arabert_prep + mean 768d | 0.66 | 0.6184 | 0.6138 | 0.6046 | **4.2s** | **769** | Mean pooling pondéré |
+| **D2. AraBERT gelé + BiLSTM + Att** | arabert_prep + seq 768d | 0.32 | **0.6976** | **0.6652** | 0.5899 | 190s | 936k | **Nouveau record (+15 pts)** |
 
 ---
+
+### Visualisation de l'Attention (D2)
+La figure officielle générée pour le compte-rendu (`results/attention_d2_5_tweets.png`) montre une concentration nette de l'attention sur les indices clés du sarcasme (notamment les rires répétés `هههههه` du Tweet #2, et les marqueurs lexicaux ironiques comme `كوش`, `بيعت`, `للجزار`).
+
 
 ## 5. Règles méthodologiques strictes
 - **Test scellé :** `testing_data.csv` n'est jamais consulté pour le choix d'hyperparamètres, de seuils ou d'architectures.
