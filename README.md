@@ -83,7 +83,13 @@ Métrique principale : **F1 de la classe sarcastique** ($F1_{\text{sarc}}$). L'a
 | **C2. AttentionBiLSTM (Sur-échantillon)**| vocab min_freq=2 + clean_str | 0.22 | 0.4489 | 0.4906 | 0.4576 | 23.9s | 5.37M | Train équilibré 50/50 |
 | **D1. AraBERT gelé [CLS] + LogReg** | arabert_prep + [CLS] 768d | 0.64 | 0.6086 | 0.6166 | 0.6000 | 9.4s | **769** | Extraction CLS simple |
 | **D1. AraBERT gelé [Mean] + LogReg**| arabert_prep + mean 768d | 0.66 | 0.6184 | 0.6138 | 0.6046 | **4.2s** | **769** | Mean pooling pondéré |
-| **D2. AraBERT gelé + BiLSTM + Att** | arabert_prep + seq 768d | 0.32 | **0.6976** | **0.6652** | 0.5899 | 190s | 936k | **Nouveau record (+15 pts)** |
+| **D2. AraBERT gelé + BiLSTM + Att** | arabert_prep + seq 768d | 0.32 | 0.6976 | 0.6652 | 0.5899 | 190s | 936k | Encodeur gelé + attention |
+| **E1. AraBERT mono-tâche fine-tuné**| AutoTokenizer AraBERT | 0.50 | **0.7097** | 0.6797 | 0.6797 | 159s | 135M | Fine-tuning complet mono-tâche |
+| **E1. MARBERTv2 mono-tâche fine-tuné**| AutoTokenizer MARBERTv2 | 0.64 | 0.6721 | 0.6694 | 0.6551 | 240s | 163M | Fine-tuning complet dialectal |
+| **E2. MARBERTv2 multi-tâche (λ=0.3)** | AutoTokenizer MARBERTv2 | 0.72 | 0.6726 | **0.6812** | 0.6463 | 232s | 163M | **Record absolu du TP** |
+| **E2. MARBERTv2 multi-tâche (λ=0.5)** | AutoTokenizer MARBERTv2 | 0.54 | 0.6667 | 0.6708 | 0.6613 | 234s | 163M | Multi-tâche sarcasme + sentiment |
+| **E2. MARBERTv2 multi-tâche (λ=1.0)** | AutoTokenizer MARBERTv2 | 0.34 | 0.6595 | 0.6667 | 0.6496 | 235s | 163M | Interférence de tâche observable |
+| **E2. Modèle Final (3 graines)** | AutoTokenizer MARBERTv2 | - | - | **0.6631 ± 0.0129** | - | - | 163M | Robustesse statistique (seeds 42, 43, 44) |
 
 ---
 
