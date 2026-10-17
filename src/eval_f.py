@@ -129,3 +129,85 @@ def save_official_predictions(
     })
     df_out.to_csv(path, index=False)
     print(f"Prédictions officielles enregistrées dans : {path}")
+
+
+def classifier_30_erreurs(
+    df_test: pd.DataFrame,
+    y_true: np.ndarray,
+    y_pred: np.ndarray,
+    y_prob: np.ndarray,
+    df_train_brut: pd.DataFrame = None,
+    save_path: str = "results/analyse_30_erreurs.csv",
+) -> pd.DataFrame:
+    """Extrait 15 FN et 15 FP et les classe dans les 5 catégories imposées (F6 / Q12) :
+    1. Connaissance du monde / contexte requis
+    2. Ironie sans marqueur
+    3. Marqueur mal interprété
+    4. Dialecte
+    5. Bruit d'annotation (croisé avec doublons contradictoires)
+    """
+    df = df_test.copy()
+    df["y_true"] = y_true
+    df["y_pred"] = y_pred
+    df["prob"] = np.round(y_prob, 4)
+
+    # 1. Identifier les doublons contradictoires du train (4.1)
+    contra_keys = set()
+    if df_train_brut is not None:
+        from src.preprocess import cle_dedup
+        keys = df_train_brut["tweet"].map(cle_dedup)
+        nuniq = df_train_brut.groupby(keys)["sarcasm"].nunique()
+        contra_keys = set(nuniq[nuniq > 1].index)
+
+    fn = df[(df["y_true"] == 1) & (df["y_pred"] == 0)].head(15).copy()
+    fp = df[(df["y_true"] == 0) & (df["y_pred"] == 1)].head(15).copy()
+
+    fn["type_erreur"] = "Faux Négatif (Sarcasme manqué)"
+    fp["type_erreur"] = "Faux Positif (Fausse alerte)"
+
+    def categoriser(row):
+        t = str(row["tweet"])
+        t_clean = ablate_sarcasm_markers(t)
+        has_markers = (t != t_clean)
+        dialect = str(row.get("dialect", "")).lower()
+
+        # A. Bruit d'annotation (croisement doublons)
+        from src.preprocess import cle_dedup
+        if cle_dedup(t) in contra_keys:
+            return "Bruit d'annotation", "Tweet identique ou similaire annoté de façon contradictoire dans le train."
+
+        # B. Marqueur mal interprété (FP avec rire/emoji, ou FN trompé par un faux marqueur)
+        if row["type_erreur"].startswith("Faux Positif") and has_markers:
+            return "Marqueur mal interprété", "Présence d'emojis ou rires expressifs ayant induit une fausse alerte sarcastique."
+
+        # C. Ironie sans marqueur (FN sobre, antiphrase pure)
+        if row["type_erreur"].startswith("Faux Négatif") and not has_markers:
+            return "Ironie sans marqueur", "Sarcasme formulé sobrement par antiphrase, sans aucun emoji ni rire explicite."
+
+        # D. Dialecte (idiomes régionaux)
+        if dialect in ["egypt", "gulf", "levant", "magreb"] and any(w in t for w in ["مش", "كده", "عشان", "ايه", "ليه", "شو", "هيك", "واش", "برشا", "شكو", "حق"]):
+            return "Dialecte", f"Tournure idiomatique ou argot dialectal ({dialect}) masquant l'intention réelle."
+
+        # E. Connaissance du monde / contexte requis
+        return "Connaissance du monde / contexte requis", "Nécessite la connaissance d'un contexte politique, culturel ou sportif externe."
+
+    rows = []
+    for _, r in pd.concat([fn, fp]).iterrows():
+        cat, expl = categoriser(r)
+        r_dict = r.to_dict()
+        r_dict["categorie"] = cat
+        r_dict["explication"] = expl
+        rows.append(r_dict)
+
+    res_df = pd.DataFrame(rows)
+    cols = ["id", "type_erreur", "categorie", "dialect", "sentiment", "prob", "explication", "tweet"]
+    cols_exist = [c for c in cols if c in res_df.columns]
+    res_df = res_df[cols_exist]
+
+    if save_path:
+        os.makedirs(os.path.dirname(save_path), exist_ok=True)
+        res_df.to_csv(save_path, index=False)
+        print(f"30 erreurs classées et sauvegardées avec succès dans : {save_path}")
+
+    return res_df
+
