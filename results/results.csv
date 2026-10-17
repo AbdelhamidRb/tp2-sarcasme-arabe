@@ -1,4 +1,12 @@
 modele,preprocessing,graine,seuil,pr_auc_val,f1_sarc_val,f1_sarc_val_seuil_0_5,accuracy_val_seuil,n_train,n_val,temps_entrainement_s,params_entraines,versions,note
-TF-IDF + LogisticRegression (class_weight=balanced),"dedup train + espaces normalisés; mots(1-2) + char_wb(2-5), min_df=2",42,0.42,0.5217,0.5153,0.5041,0.7721,11217,1255,4.81,186332,sklearn=1.6.1; torch=2.11.0+cu130; transformers=5.18.0,seuil et F1 choisis sur val (optimiste) ; test non utilisé
+TF-IDF + LogisticRegression (class_weight=balanced),"dedup train + espaces normalisés; mots(1-2) + char_wb(2-5), min_df=2",42,0.42,0.5217,0.5153,0.5041,0.7721,11217.0,1255.0,4.81,186332.0,sklearn=1.6.1; torch=2.11.0+cu130; transformers=5.18.0,seuil et F1 choisis sur val (optimiste) ; test non utilisé
 mDeBERTa NLI zero-shot (français),dedup train,42,0.75,0.3495,0.4119,,,,,,,,"zero-shot, seuil sur val"
 "CAMeL sentiment, règle négatif=>sarcasme",dedup train,42,,,0.4656,,,,,,,,contamination possible (ArSarcasm v1 construit sur ASTD/SemEval) ; non vérifiée
+C1. BiLSTM (embedding aléatoire),dedup train + vocab min_freq=2,42,0.26,0.423,0.4453,0.3563,0.7817,11217.0,1255.0,22.63,5353634.0,,"seuil sur val, C1 emb aléatoire"
+C1. BiLSTM (AraVec figé),dedup train + vocab min_freq=2 + clean_str aravec,42,0.12,0.4699,0.4969,0.3028,0.7434,11217.0,1255.0,13.66,440834.0,,"seuil sur val, C1 AraVec figé"
+C1. BiLSTM (AraVec dégelé),dedup train + vocab min_freq=2 + clean_str aravec,42,0.18,0.5026,0.5074,0.3,0.788,11217.0,1255.0,17.61,5353634.0,,"seuil sur val, C1 AraVec dégelé"
+C2. BiLSTM + Attention custom (AraVec dégelé),dedup train + vocab min_freq=2 + clean_str aravec,42,0.26,0.491,0.5099,0.4084,0.7825,11217.0,1255.0,12.12,5370146.0,,"seuil sur val, C2 attention custom"
+C3. Mini-Transformer (avec encodage pos),dedup train + vocab min_freq=2 + clean_str aravec,42,0.28,0.4818,0.4963,0.3942,0.7833,11217.0,1255.0,12.6,5216546.0,,"seuil sur val, C3 Transformer pos=True"
+C3. Mini-Transformer (SANS encodage pos),dedup train + vocab min_freq=2 + clean_str aravec,42,0.26,0.4876,0.517,0.4022,0.7737,11217.0,1255.0,12.27,5216546.0,,"seuil sur val, C3 Transformer pos=False (Ablation)"
+C2. AttentionBiLSTM (Perte pondérée),dedup train + vocab min_freq=2 + clean_str aravec,42,0.6,0.468,0.5106,0.4764,0.7968,11217.0,1255.0,18.52,5370146.0,,"seuil sur val, déséquilibre perte pondérée"
+C2. AttentionBiLSTM (Sur-échantillonnage train),dedup train + vocab min_freq=2 + clean_str aravec,42,0.22,0.4489,0.4906,0.4576,0.7618,18572.0,1255.0,23.94,5370146.0,,"seuil sur val, déséquilibre sur-échantillonnage train"
