@@ -1,0 +1,14 @@
+torch
+transformers
+datasets
+evaluate
+scikit-learn
+gensim
+pyarabic
+emoji
+arabert
+pandas
+numpy
+matplotlib
+seaborn
+tqdm

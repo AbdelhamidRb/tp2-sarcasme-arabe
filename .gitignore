@@ -1,6 +1,8 @@
-﻿__pycache__/
+__pycache__/
 .venv/
 .ipynb_checkpoints/
 *.pt
 *.bin
 *.safetensors
+QUESTIONS_REPONSES_TP2.md
+AGENT.md

@@ -9,11 +9,22 @@ COLONNES = [
 ]
 
 def ajouter_resultat(ligne: dict, chemin: str = CHEMIN) -> None:
-    """Ajoute une ligne en respectant l'ordre des COLONNES. Champs absents = vides."""
+    """Ajoute ou met à jour une ligne en respectant l'ordre des COLONNES. Champs absents = vides."""
     inconnues = set(ligne) - set(COLONNES)
     if inconnues:
         raise ValueError(f"colonnes inconnues : {inconnues}")
-    df = pd.DataFrame([ligne]).reindex(columns=COLONNES)
+    nouvelle_ligne = pd.DataFrame([ligne]).reindex(columns=COLONNES)
     os.makedirs(os.path.dirname(chemin), exist_ok=True)
-    ecrire_entete = not os.path.exists(chemin) or os.path.getsize(chemin) == 0
-    df.to_csv(chemin, mode="a", header=ecrire_entete, index=False)
+    if os.path.exists(chemin) and os.path.getsize(chemin) > 0:
+        existant = pd.read_csv(chemin)
+        masque = (
+            (existant["modele"] == ligne.get("modele")) &
+            (existant["preprocessing"] == ligne.get("preprocessing")) &
+            (existant["graine"] == ligne.get("graine"))
+        )
+        if masque.any():
+            existant = existant[~masque]
+        df_final = pd.concat([existant, nouvelle_ligne], ignore_index=True)
+    else:
+        df_final = nouvelle_ligne
+    df_final.to_csv(chemin, index=False)
