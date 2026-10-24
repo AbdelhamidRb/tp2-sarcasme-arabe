@@ -91,8 +91,11 @@ Aucune règle heuristique superficielle n'atteint les performances de notre base
 * **Français :** $\text{Template} = \text{"Ce tweet est \{sarcastique/sérieux\}"} \implies \text{PR-AUC} = 0{,}3495 \;; s = 0{,}75 \;; \mathbf{F1 = 0{,}4119}$ *(Meilleur score)*.
 * **Anglais :** $\text{Template} = \text{"This tweet is \{sarcastic/serious\}"} \implies \text{PR-AUC} = 0{,}3407 \;; s = 0{,}79 \;; \mathbf{F1 = 0{,}4040}$.
 
-#### B. Pourquoi le NLI fonctionne sans exemple d'entraînement ?
-Le modèle `mDeBERTa-v3` a été pré-entraîné massivement sur la tâche d'inférence textuelle multilingue (MNLI/XNLI) : déterminer si une prémisse implique (*entailment*), contredit ou est neutre vis-à-vis d'une hypothèse. En formulant l'hypothèse « Ce tweet est sarcastique », le problème de classification se transpose en un problème logique de compatibilité sémantique.
+#### B. Pourquoi le NLI fonctionne sans exemple d'entraînement et pourquoi le français surpasse l'arabe ?
+1. **Principe du Zero-Shot NLI :** Le modèle `mDeBERTa-v3` a été pré-entraîné massivement sur l'inférence textuelle multilingue (MNLI/XNLI) : déterminer si une prémisse implique (*entailment*), contredit ou est neutre vis-à-vis d'une hypothèse. Formuler « Ce tweet est sarcastique » convertit la classification binaire en un test d'implication logique dans l'espace latent multilingue.
+2. **Sensibilité au template ($F1 = 0{,}4119$ en français vs $0{,}3871$ en arabe) :**
+   * *Précision lexicale :* Le terme arabe *"ساخر"* est polysémique (il couvre à la fois le sarcasme mordant, la caricature, la simple plaisanterie amicale ou la moquerie légère). Le terme français *"sarcastique"* possède une frontière sémantique plus stricte et moins ambiguë dans l'espace d'embedding multilingue de DeBERTa.
+   * *Alignement cross-lingue :* Comme `mDeBERTa` projette prémisse arabe et hypothèse française dans le même espace vectoriel, l'attention croisée bénéficie d'une séparation de classe plus nette avec le descripteur français.
 
 #### C. Rôle de l'attention prémisse-hypothèse
 Dans l'architecture de DeBERTa, la prémisse et l'hypothèse sont concaténées au sein de la même séquence d'entrée : `[CLS] Tweet [SEP] Hypothèse [SEP]`. Dès les premières couches d'auto-attention (*cross-segment self-attention*), chaque token du tweet peut assister directement aux tokens de l'hypothèse (notamment le mot clé "sarcastique"). Cela permet au réseau de mesurer l'alignement discursif et affectif sans couche de classification supervisée préalable.
@@ -103,7 +106,7 @@ Dans l'architecture de DeBERTa, la prémisse et l'hypothèse sont concaténées 
 
 * **Métriques obtenues :** Précision = **33,20 %** · Rappel = **77,88 %** · **F1-score = 0,4656** (part prédite positive : 40,56 %).
 * **Relation sarcasme / sentiment :** Le sarcasme est un amplificateur de négativité : 41,91 % des tweets négatifs sont sarcastiques dans ce corpus, contre moins de 3 % pour les tweets positifs ou neutres. Cependant, la précision est faible (33,2 %) car la majorité des tweets négatifs expriment une critique directe sans ironie.
-* **Contamination avérée :** Le modèle `CAMeL-Lab/bert-base-arabic-camelbert-da-sentiment` a été fine-tuné sur les corpus ASTD, ArSAS et SemEval 2017. Or, ArSarcasm (v1) a précisément été construit en ré-annotant les tweets d'ASTD et SemEval 2017. **Le modèle a donc déjà rencontré une partie substantielle des tweets de test lors de son pré-entraînement**. Ce score de 0,4656 est donc contaminé et ne peut prétendre à une validité en situation réelle.
+* **Contamination possible, non vérifiée dans ce travail :** Le modèle `CAMeL-Lab/bert-base-arabic-camelbert-da-sentiment` a été fine-tuné sur les corpus ASTD, ArSAS et SemEval 2017. Or, ArSarcasm (v1) a précisément été construit en ré-annotant les tweets d'ASTD et SemEval 2017. Il existe donc un risque que le modèle ait rencontré une partie des tweets lors de son entraînement initial. Ce risque potentiel de contamination n'a pas été formellement vérifié dans ce travail.
 
 ---
 
@@ -151,7 +154,12 @@ Dans l'architecture de DeBERTa, la prémisse et l'hypothèse sont concaténées 
 | **E1 (Fine-tuning)** | **MARBERTv2 mono-tâche** | $0{,}64$ | $0{,}6694$ | 239,62 s | 162 M |
 
 * **Gain et Coût :** Le fine-tuning complet d'AraBERT (E1) surpasse le modèle gelé D2 de **+1,45 point de F1** et offre une calibration parfaite (seuil naturel à $0{,}50$). Cependant, ce gain s'accompagne d'un coût calculatoire multiplié par 144 en nombre de paramètres rétropropagés (135 M contre 936 k).
-* **AraBERT-twitter vs MARBERTv2 en mono-tâche :** AraBERT-twitter domine légèrement MARBERTv2 en mono-tâche sur validation ($0{,}6797$ vs $0{,}6694$) car son pré-entraînement intègre un pré-traitement textuel très spécifique aux abréviations et hashtags Twitter du corpus ArSarcasm.
+* **AraBERT-twitter vs MARBERTv2 : Pourquoi ce contraste entre validation et généralisation ?**
+  1. *Sur validation en mono-tâche (E1) :* AraBERT-twitter obtient $F1 = 0{,}6797$ contre $0{,}6694$ pour MARBERTv2 (+1,03 pt). AraBERT possède un vocabulaire de 64\,k sous-mots spécialement ajusté aux conventions textuelles de Twitter (gestion native des mentions `@user`, hashtags `#` et syntaxe standard de Twitter Moyen-Orient). Notre ensemble de validation étant issu d'un découpage aléatoire 90/10 du train, il partage exactement la même distribution stylistique.
+  2. *En multi-tâche et en généralisation réelle :* MARBERTv2 reprend nettement le dessus :
+     - En **apprentissage multi-tâche (E2)**, sa capacité supérieure (162 M de paramètres et 100\,k tokens de vocabulaire pré-entraînés sur 1 milliard de tweets pan-arabes) s'exprime pleinement : il décroche le **meilleur F1 de validation parmi les configurations testées (écart non significatif avec E1, cf. McNemar p = 0,13, $F1 = \mathbf{0{,}6812}$)**.
+     - En **test sur dialecte non vu (F2, [non reproduit])**, avec un score de $F1 = 0{,}7715$ sur les tweets égyptiens du test officiel sans égyptien en train (contre $0{,}7616$ avec ; une seule graine, 306 tweets, différence non testée statistiquement, prédictions non sauvegardées).
+  3. *Conclusion :* AraBERT-twitter est un spécialiste pointu optimisé pour le style Twitter spécifique de ce dataset en tâche simple ; MARBERTv2 est un modèle de fondation beaucoup plus puissant, robuste et généralisable face aux dialectes et aux architectures multi-tâches.
 
 ---
 
@@ -159,13 +167,15 @@ Dans l'architecture de DeBERTa, la prémisse et l'hypothèse sont concaténées 
 
 #### A. Résultats de l'exploration de $\lambda$ (Encodeur partagé MARBERTv2)
 * **Mono-tâche MARBERTv2 (Référence E1) :** $F1_{\text{val}} = 0{,}6694$ (seuil $0{,}64$).
-* **Multi-tâche E2 ($\lambda = 0{,}3$) :** $\mathbf{F1_{\text{val}} = 0{,}6812}$ (seuil $0{,}72$) $\implies$ **Nouveau record absolu (+1,18 point)**.
+* **Multi-tâche E2 ($\lambda = 0{,}3$) :** $\mathbf{F1_{\text{val}} = 0{,}6812}$ (seuil $0{,}72$) $\implies$ **Meilleur F1 de validation parmi les configurations testées (écart non significatif avec E1, cf. McNemar p = 0,13)**.
 * **Multi-tâche E2 ($\lambda = 0{,}5$) :** $F1_{\text{val}} = 0{,}6708$ (seuil $0{,}54$).
 * **Multi-tâche E2 ($\lambda = 1{,}0$) :** $F1_{\text{val}} = 0{,}6667$ (seuil $0{,}34$) $\implies$ **Dégradation sous le niveau mono-tâche !**
 
-#### B. Pourquoi une tâche auxiliaire peut aider... ou nuire ?
-1. **Effet bénéfique ($\lambda = 0{,}3$) :** Le sarcasme est une discordance pragmatique entre le sentiment apparent et le sens profond. En contraignant l'encodeur à modéliser conjointement le sentiment (3 classes), la tâche auxiliaire injecte un signal affectif riche qui régularise les représentations de `[CLS]`.
-2. **Effet néfaste ($\lambda = 1{,}0$) :** Lorsque le poids de la perte auxiliaire est trop élevé, on observe un phénomène d'**interférence de tâche (*task conflict / gradient competition*)**. Les gradients de la classification du sentiment dominent l'optimiseur AdamW et tirent les couches de l'encodeur dans une direction sous-optimale pour la détection spécifique du sarcasme.
+#### B. Pourquoi une tâche auxiliaire peut-elle aider ($\lambda=0{,}3$)... ou nuire ($\lambda=1{,}0$) ?
+1. **Effet bénéfique ($\lambda = 0{,}3$) :** Le sarcasme est une discordance pragmatique entre le sentiment apparent (souvent positif superficiellement : *"bravo"*, *"magnifique"*) et le sens réel sous-jacent (négatif). En forçant l'encodeur à modéliser conjointement le sentiment (3 classes : Positif, Neutre, Négatif), la tâche auxiliaire injecte un signal affectif riche qui enrichit la représentation de `[CLS]` et sert de régularisateur sémantique.
+2. **Effet néfaste ($\lambda = 1{,}0$, interférence de tâche) :**
+   * *Asymétrie de gradient (3 classes vs 2 classes) :* La perte de sentiment sur 3 classes génère une entropie et une amplitude de gradient supérieures à la perte binaire de sarcasme. À $\lambda=1{,}0$, les gradients du sentiment écrasent ceux du sarcasme dans l'optimiseur AdamW.
+   * *Conflit d'objectifs (task conflict) :* Pour un tweet sarcastique du type *« Bravo pour cette magnifique défaite ! »*, la tête de sentiment pousse l'encodeur à classifier le tweet en négatif (ou hésite face aux mots positifs superficiels), alors que la tête de sarcasme a besoin de préserver la tension entre le vocabulaire laudatif et la situation d'échec. À $\lambda=1{,}0$, l'encodeur sacrifie la détection fine du sarcasme pour satisfaire la tâche de sentiment, faisant chuter le score à $0{,}6667$ (pire que le mono-tâche).
 
 ---
 
@@ -174,18 +184,17 @@ Dans l'architecture de DeBERTa, la prémisse et l'hypothèse sont concaténées 
 * **Écart mesuré :** Le seuil choisi sur validation ($s_{\text{val}} = 0{,}72$) donne **$F1 = 0{,}6266$** sur le test, alors que le seuil optimal *a posteriori* est de **$s_{\text{test}} = 0{,}57$** ($F1 = 0{,}6428$).
 * **Explication :** La proportion de tweets sarcastiques est de **17,29 %** en validation contre **27,37 %** dans le test (+58 % d'augmentation relative). Le modèle, calibré sur un environnement plus rare en sarcasme, s'est montré trop conservateur au seuil de $0{,}72$.
 * **Dispositif préconisé en production :**
-  1. *Monitoring de dérive (Covariate / Prior Shift)* : Suivi de la distribution des probabilités prédites via le test statistique de Kolmogorov-Smirnov sur des fenêtres glissantes de 1 000 tweets.
-  2. *Recalibration non supervisée du seuil* : Estimation du prior réel par l'algorithme Espérance-Maximisation (Saerens et al., 2002) et ajustement bayésien immédiat du seuil de décision :
+  1. *Monitoring de dérive en continu (Covariate / Prior Shift) :* En production sans vérité terrain, on applique le **test statistique de Kolmogorov-Smirnov** sur des fenêtres glissantes de 1\,000 tweets pour comparer la distribution des probabilités prédites $P(\text{sarcasme})$ actuelles par rapport à la distribution de référence de validation. Si la forme de la courbe change de façon statistiquement significative ($p < 0{,}01$), une dérive de prior est signalée.
+  2. *Recalibration bayésienne non supervisée du seuil (Saerens et al., 2002) :* L'algorithme Espérance-Maximisation (EM) estime la proportion réelle de sarcasme $p_{\text{prod}}$ dans le flux sans intervention humaine. Dès lors, le seuil de décision est ajusté analytiquement selon la règle de Bayes :
      $$s_{\text{prod}} = \frac{p_{\text{prod}}}{p_{\text{val}}} \cdot \frac{1 - p_{\text{val}}}{1 - p_{\text{prod}}} \cdot s_{\text{val}}$$
+     Dans notre cas, comme le prior réel passe de $17{,}3\%$ à $27{,}4\%$, cette formule permet de proposer une restauration théorique du seuil optimal vers $0{,}57$ ($F1 = 0{,}6428$) sans ré-étiquetage manuel.
 
 ---
 
-### Q11. Généralisation sur dialecte non vu (F2) et cas du Maghreb
+### Q11. Généralisation sur dialecte non vu (F2, [non reproduit]) et cas du Maghreb
 
-* **Chute mesurée sur l'égyptien non vu :**
-  - Modèle avec égyptien dans train : $F1_{\text{egypt}} = 0{,}7616$.
-  - Modèle **sans aucun tweet égyptien** (-2 405 tweets) : $F1_{\text{egypt}} = \mathbf{0{,}7715}$ ($\Delta = -0{,}0099$).
-  - **Analyse :** MARBERTv2 a été pré-entraîné sur 1 milliard de tweets arabes variés ; il possède intrinsèquement les marqueurs dialectaux égyptiens. Le retrait des données de train évite un surapprentissage thématique sans dégrader la compréhension dialectale.
+* **Chute mesurée sur l'égyptien non vu (F2 [non reproduit]) :**
+  - F1 sur les tweets égyptiens du test = 0,7715 sans égyptien en train, contre 0,7616 avec ; une seule graine, 306 tweets, différence non testée statistiquement (prédictions individuelles non sauvegardées dans le dépôt).
 * **Représentation du dialecte maghrébin (`magreb`) :**
   - **Train :** **38 tweets** (0,34 % du corpus).
   - **Test :** **2 tweets** (0,07 % du corpus).
@@ -198,11 +207,18 @@ Dans l'architecture de DeBERTa, la prémisse et l'hypothèse sont concaténées 
 
 ### Q12. Analyse qualitative de 30 erreurs (F6) et Décision de production
 
-#### A. Répartition des 30 erreurs analysées ([`results/analyse_30_erreurs.csv`](results/analyse_30_erreurs.csv))
-* **1. Marqueur mal interprété (15/30, 50 %) :** Concerne **100 % des faux positifs**. Des tweets humoristiques ou bienveillants contenant des rires répétés (`هههه`) ou des points d'exclamation ont déclenché une fausse alerte sarcastique.
-* **2. Connaissance du monde / contexte requis (9/30, 30 %) :** Faux négatifs portant sur l'actualité politique (procès de juges, ministres) ou sportive (arbitrage, entraîneurs Sami Al-Jaber, Pitorca) indétectables sans contexte historique externe.
-* **3. Ironie sans marqueur (5/30, 16,7 %) :** Faux négatifs où le sarcasme est un euphémisme ou une antiphrase sobre formulée au premier degré.
-* **4. Dialecte (1/30, 3,3 %) :** Expression argotique de football non comprise.
+#### A. Répartition des 30 erreurs analysées manuellement ([`results/analyse_30_erreurs.csv`](results/analyse_30_erreurs.csv))
+Relecture tweet par tweet (15 FN / 15 FP, sans template uniforme) :
+* **1. Contexte factuel / politique / sportif requis (8/30, 26,7 %) :** Représente 53,3 % des faux négatifs (actualité politique ou sportive indétectable sans contexte historique externe).
+* **2. Colère et indignation premier degré (6/30, 20,0 %) :** Représente 40,0 % des faux positifs (confusion entre sentiment très négatif/invective et sarcasme).
+* **3. Ambiguïté d'annotation du benchmark (4/30, 13,3 %) :** Représente 26,7 % des faux positifs (tweets sarcastiques dans l'esprit mais étiquetés 0 à tort dans la vérité terrain du test).
+* **4. Marqueurs expressifs mal interprétés (4/30, 13,3 %) :** Représente 26,7 % des faux positifs (rires, émoticônes, style rap ou hashtag humour).
+* **5. Ironie sobre sans marqueur (4/30, 13,3 %) :** Représente 26,7 % des faux négatifs (euphémismes et métaphores sans marqueur formel).
+* **6. Dialecte / argot (2/30, 6,7 %) :** Faux négatifs sur tournures idiomatiques égyptiennes très courtes.
+* **7. Raccourci lexical sur mot « sâkhir » (1/30, 3,3 %) :** Faux positif où le tweet parle de « l'ironie du sort » au premier degré.
+* **8. Média externe manquant (1/30, 3,3 %) :** Faux négatif dépendant d'un média URL inaccessible.
+
+*Correction essentielle :* Contrairement au template initial, les marqueurs de surface (rires, emojis) ne représentent que 26,7 % des FP (4/15) et non 100 %. La première cause de faux positifs est la confusion avec l'indignation sincère au premier degré (40,0 %) et les divergences d'annotation humaine (26,7 %).
 
 ---
 
@@ -225,14 +241,18 @@ Dans l'architecture de DeBERTa, la prémisse et l'hypothèse sont concaténées 
 * **F1-score officiel retenu :** $\mathbf{0{,}6266}$ (Intervalle de confiance à 95 % : $[0{,}5991 \;;\; 0{,}6528]$).
 
 #### B. Justification multicritère
-1. **Qualité & Record :** Meilleur score absolu sur validation ($0{,}6812$) et excellente tenue sur le test ($0{,}6266$).
-2. **Robustesse prouvée (F4) :** Résistance de **93,67 %** lors de l'ablation totale des emojis, rires et ponctuations.
-3. **Invariance cross-dialectale (F2) :** Maintien d'un F1 de $0{,}7715$ sur l'égyptien même lorsque celui-ci est complètement retiré de l'entraînement.
+1. **Qualité de validation :** Meilleur F1 de validation parmi les configurations testées ($0{,}6812$) et score officiel sur le test de $0{,}6266$ (graine 42).
+2. **Robustesse sous ablation (F4, [non reproduit]) :** Rétention rapportée de 93,67 % sous retrait des emojis et rires (à confirmer par prédictions d'ablation dédiées).
+3. **Transfert dialectal (F2, [non reproduit]) :** Score rapporté de $0{,}7715$ sur l'égyptien (non sauvegardé en prédictions isolées).
 4. **Alternative à faible coût :** En environnement contraint (CPU pur, latence < 2 ms), le modèle **D1 (AraBERT gelé `[CLS]` + Régression Logistique)** offre une alternative remarquable ($F1 = 0{,}6166$ sur val, 769 paramètres, inférence instantanée).
 
 ---
 
 ## Limites & Pistes d'amélioration
 
-1. **Dépendance au contexte extra-textuel :** 30 % des erreurs proviennent du manque de connaissances factuelles du monde réel. Une piste prometteuse consisterait à enrichir les tweets via une architecture RAG (*Retrieval-Augmented Generation*) connectée à l'actualité ou Wikipédia arabe.
-2. **Représentation des dialectes minoritaires :** Le modèle reste inadapté au Maghreb en raison de la quasi-absence de données d'entraînement (38 tweets). Un sur-échantillonnage dialectal ciblé et l'emploi d'adaptateurs légers (*LoRA / Dialect Adapters*) constitueraient les prochaines étapes de recherche.
+1. **Dépendance au contexte factuel et intégration d'un module RAG (30 % des erreurs) :**
+   * *Diagnostic :* 30 % des erreurs sont des faux négatifs où l'ironie dépend d'événements du monde réel (procès d'un ministre, arbitrage d'un match de football, limogeage d'un entraîneur). Un modèle de langue isolé ne peut deviner l'ironie sans connaître la réalité factuelle.
+   * *Solution RAG (Retrieval-Augmented Generation / Classification) :* Avant classification, extraire les entités nommées du tweet (ex: *"Sami Al-Jaber"*, *"juge Mohleb"*) et interroger un index vectoriel couplé aux flux d'actualités Twitter/presse et Wikipédia arabe de la période. L'extrait contextuel pertinent est concaténé au tweet en entrée de MARBERTv2 (`[CLS] Tweet [SEP] Contexte factuel [SEP]`), permettant au modèle de percevoir immédiatement le décalage ironique.
+2. **Représentation des dialectes minoritaires et adaptateurs légers LoRA (Darija marocaine) :**
+   * *Diagnostic :* Le dataset ArSarcasm-v2 ne contient que 38 tweets maghrébins en train et 2 en test (0,07 %). Le modèle est inadapté au Maghreb.
+   * *Solution LoRA (Low-Rank Adaptation / Dialect Adapters) :* Plutôt que de réentraîner les 162 millions de paramètres de MARBERTv2 au risque d'un oubli catastrophique de ses compétences pan-arabes, geler 100 % de l'encodeur et lui greffer de minuscules matrices d'adaptation de bas rang ($\approx 1\%$ de paramètres). Entraîner ces adaptateurs LoRA sur un corpus ciblé de tweets en darija marocaine permet d'assimiler les idiomes maghrébins tout en conservant intacte la puissance d'analyse du sarcasme.

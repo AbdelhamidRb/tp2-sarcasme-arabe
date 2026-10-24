@@ -2,7 +2,7 @@
 
 **Module :** Transformers & LLMs  
 **Enseignant :** Prof. Yassir MATRANE  
-**Étudiant :** Abdelhamid Rherib ([@AbdelhamidRb](https://github.com/AbdelhamidRb))  
+**Étudiant :** Abdelhamid ([@AbdelhamidRb](https://github.com/AbdelhamidRb))  
 **Corpus :** ArSarcasm-v2 (WANLP 2021)
 
 ---
@@ -36,13 +36,13 @@ tp2-sarcasme-arabe/
 │   ├── preprocess.py        # Normalisation et déduplication rigoureuse de train
 │   └── results.py           # Journalisation standardisée dans results/results.csv
 ├── notebooks/
-│   ├── 01_audit_texte.ipynb          # Audit du texte brut et identification des artefacts
-│   ├── 02_partie_A_baseline.ipynb    # Exploration, classifieur trivial, baseline TF-IDF
-│   ├── 03_partie_B_zero_shot.ipynb   # mDeBERTa NLI zero-shot et CAMeL-Lab sentiment
-│   ├── 04_partie_C_embeddings.ipynb  # (À venir) AraVec, BiLSTM, Attention pooling, Transformer
-│   ├── 05_partie_D_plm_gele.ipynb    # (À venir) AraBERT gelé + tête attention
-│   ├── 06_partie_E_finetuning.ipynb  # (À venir) Fine-tuning mono/multi-tâche (MARBERT, AraBERT)
-│   └── 07_partie_F_generalisation.ipynb # (À venir) Tests de généralisation et test officiel
+│   ├── 01_audit_texte.ipynb          # Audit du texte brut et identification des artefacts (réalisé)
+│   ├── 02_partie_A_baseline.ipynb    # Exploration, classifieur trivial, baseline TF-IDF (réalisé)
+│   ├── 03_partie_B_zero_shot.ipynb   # mDeBERTa NLI zero-shot et CAMeL-Lab sentiment (réalisé)
+│   ├── 04_partie_C_embeddings.ipynb  # AraVec, BiLSTM, Attention pooling, Transformer (réalisé)
+│   ├── 05_partie_D_plm_gele.ipynb    # AraBERT gelé + tête attention (réalisé)
+│   ├── 06_partie_E_finetuning.ipynb  # Fine-tuning mono/multi-tâche (MARBERT, AraBERT) (réalisé)
+│   └── 07_partie_F_generalisation.ipynb # Tests de généralisation et test officiel (réalisé)
 ├── results/
 │   └── results.csv          # Tableau de bord des métriques sur validation et test
 └── predictions/             # Fichiers de prédictions finaux formatés
@@ -86,10 +86,22 @@ Métrique principale : **F1 de la classe sarcastique** ($F1_{\text{sarc}}$). L'a
 | **D2. AraBERT gelé + BiLSTM + Att** | arabert_prep + seq 768d | 0.32 | 0.6976 | 0.6652 | 0.5899 | 190s | 936k | Encodeur gelé + attention |
 | **E1. AraBERT mono-tâche fine-tuné**| AutoTokenizer AraBERT | 0.50 | **0.7097** | 0.6797 | 0.6797 | 159s | 135M | Fine-tuning complet mono-tâche |
 | **E1. MARBERTv2 mono-tâche fine-tuné**| AutoTokenizer MARBERTv2 | 0.64 | 0.6721 | 0.6694 | 0.6551 | 240s | 163M | Fine-tuning complet dialectal |
-| **E2. MARBERTv2 multi-tâche (λ=0.3)** | AutoTokenizer MARBERTv2 | 0.72 | 0.6726 | **0.6812** | 0.6463 | 232s | 163M | **Record absolu du TP** |
+| **E2. MARBERTv2 multi-tâche (λ=0.3)** | AutoTokenizer MARBERTv2 | 0.72 | 0.6726 | **0.6812** | 0.6463 | 232s | 163M | Meilleur F1 de validation parmi les configurations testées (écart non significatif avec E1, cf. McNemar p = 0,13) |
 | **E2. MARBERTv2 multi-tâche (λ=0.5)** | AutoTokenizer MARBERTv2 | 0.54 | 0.6667 | 0.6708 | 0.6613 | 234s | 163M | Multi-tâche sarcasme + sentiment |
 | **E2. MARBERTv2 multi-tâche (λ=1.0)** | AutoTokenizer MARBERTv2 | 0.34 | 0.6595 | 0.6667 | 0.6496 | 235s | 163M | Interférence de tâche observable |
-| **E2. Modèle Final (3 graines)** | AutoTokenizer MARBERTv2 | - | - | **0.6631 ± 0.0129** | - | - | 163M | Robustesse statistique (seeds 42, 43, 44) |
+| **E2. Modèle Final (3 graines, val)**| AutoTokenizer MARBERTv2 | - | - | **0.6631 ± 0.0158** | - | - | 163M | Robustesse statistique val avec ddof=1 (seeds 42, 43, 44) |
+
+---
+
+## 5. Généralisation sur le Test officiel (Partie F)
+
+- **F1 Test officiel (seed 42, seuil val 0,72) :** **$F1_{\text{test}} = 0{,}6266$** (IC 95 % : $[0{,}5991 \;;\; 0{,}6528]$ par bootstrap 1 000 tirages).
+  - Prédictions sauvegardées et vérifiables dans [`predictions/MARBERTv2_multitask_seed42.csv`](predictions/MARBERTv2_multitask_seed42.csv).
+- **Seeds 43 et 44 sur test :** Prédictions test seeds 43 et 44 à produire (notebook 06) ; non disponibles dans le dépôt à ce jour.
+- **Audits F2, F3 et F4 [non reproduit] :**
+  - **F2 (retrait égyptien) :** $F1 = 0{,}7715$ rapporté sans égyptien en train contre $0{,}7616$ avec (306 tweets, [non reproduit], fichier de prédictions absent du dépôt).
+  - **F3 (suppression URL et mentions) :** $F1 = 0{,}6271$ rapporté ([non reproduit], fichier de prédictions absent du dépôt).
+  - **F4 (ablation emojis et rires) :** Rétention de 93,67 % rapportée (503 / 537 vrais positifs, [non reproduit], fichier de prédictions absent du dépôt).
 
 ---
 
