@@ -2,278 +2,364 @@
 <html lang="fr">
 <head>
     <meta charset="utf-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-    <title>TP2 — Détection du Sarcasme en Arabe (ArSarcasm-v2)</title>
+    <title>TP2 · Détection du sarcasme en arabe · ArSarcasm-v2</title>
 
-    <!-- Google Fonts : Inter pour le texte latin, Noto Sans Arabic pour le texte arabe -->
+    <!-- Google Fonts : Inter et Noto Sans Arabic (aucun autre CDN externe) -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;700;800&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+Arabic:wght@400;600;700&display=swap" rel="stylesheet">
 
-    <!-- Reveal.js 5.1.0 (version figée via cdnjs) -->
+    <!-- Reveal.js 5.1.0 cdnjs (version figée) -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/reveal.min.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/black.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/5.1.0/theme/white.min.css">
 
     <style>
+        /* ========================================================
+           FEUILLE DE STYLE SOBRE & ACADÉMIQUE (FORMAT 16:9)
+           ======================================================== */
         :root {
-            --primary: #38bdf8;      /* Cyan */
-            --secondary: #818cf8;    /* Indigo */
-            --accent: #34d399;       /* Vert émeraude */
-            --warning: #fbbf24;      /* Jaune ambre */
-            --danger: #f87171;       /* Rouge corail */
-            --dark-card: #1e293b;    /* Slate foncé */
-            --border-card: #334155;
-            --text-main: #f8fafc;
-            --text-muted: #94a3b8;
+            --bg-main: #FFFFFF;
+            --text-main: #1F2937;
+            --text-muted: #6B7280;
+            --text-light: #9CA3AF;
+            --blue-accent: #1D4ED8;
+            --amber-alert: #B45309;
+            --green-success: #15803D;
+            --border-light: #E5E7EB;
+            --bg-light: #F3F4F6;
         }
 
+        /* Base Reveal */
         .reveal {
-            font-family: 'Inter', system-ui, sans-serif;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
             color: var(--text-main);
-            background: radial-gradient(circle at 50% 20%, #1e293b 0%, #0f172a 60%, #020617 100%);
+            background-color: var(--bg-main);
+            font-size: 26px;
+            font-weight: 400;
+            line-height: 1.4;
         }
 
-        .reveal h1, .reveal h2, .reveal h3, .reveal h4 {
-            font-family: 'Inter', system-ui, sans-serif;
-            font-weight: 700;
-            color: #ffffff;
+        .reveal .slides {
+            text-align: left;
+        }
+
+        .reveal .slides section {
+            padding: 30px 48px;
+            box-sizing: border-box;
+            height: 100%;
+        }
+
+        /* Slide Titre (Seule slide sombre) */
+        .reveal .slides section.slide-title {
+            background-color: #1E3A8A !important;
+            color: #FFFFFF !important;
+            display: flex !important;
+            flex-direction: column !important;
+            justify-content: center !important;
+            padding: 60px 80px !important;
+        }
+
+        .slide-title h1 {
+            color: #FFFFFF !important;
+            font-size: 54px !important;
+            font-weight: 700 !important;
+            line-height: 1.15 !important;
+            margin: 0 0 16px 0 !important;
             letter-spacing: -0.02em;
-            text-transform: none;
+        }
+
+        .slide-title .subtitle {
+            font-size: 28px;
+            color: #93C5FD;
+            font-weight: 500;
+            margin-bottom: 48px;
+        }
+
+        .slide-title .author-block {
+            font-size: 22px;
+            color: #E2E8F0;
+            line-height: 1.6;
+            border-left: 3px solid #60A5FA;
+            padding-left: 18px;
+        }
+
+        /* En-têtes standards */
+        .slide-header {
+            margin-bottom: 24px;
         }
 
         .reveal h2 {
-            font-size: 1.7em;
-            margin-bottom: 25px;
-            background: linear-gradient(135deg, #ffffff 40%, var(--primary) 100%);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-        }
-
-        .reveal h3 {
-            font-size: 1.2em;
-            color: var(--primary);
-            margin-bottom: 15px;
-        }
-
-        /* Classes utilitaires pour disposition par cartes */
-        .grid-2 {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 20px;
-            align-items: stretch;
-        }
-
-        .grid-3 {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 16px;
-            align-items: stretch;
-        }
-
-        .grid-4 {
-            display: grid;
-            grid-template-columns: repeat(4, 1fr);
-            gap: 14px;
-            align-items: stretch;
-        }
-
-        .card {
-            background: rgba(30, 41, 59, 0.75);
-            border: 1px solid var(--border-card);
-            border-radius: 12px;
-            padding: 16px 20px;
-            backdrop-filter: blur(8px);
-            text-align: left;
-            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.25);
-        }
-
-        .card-stat {
-            text-align: center;
-            background: rgba(30, 41, 59, 0.85);
-            border: 1px solid var(--border-card);
-            border-radius: 12px;
-            padding: 18px 14px;
-        }
-
-        .stat-value {
-            font-size: 2.2em;
-            font-weight: 800;
-            line-height: 1.1;
-            color: var(--primary);
-            margin-bottom: 6px;
-        }
-
-        .stat-value.accent { color: var(--accent); }
-        .stat-value.warning { color: var(--warning); }
-        .stat-value.danger { color: var(--danger); }
-
-        .stat-label {
-            font-size: 0.72em;
-            text-transform: uppercase;
-            letter-spacing: 0.05em;
-            color: var(--text-muted);
-            font-weight: 600;
-        }
-
-        .stat-sub {
-            font-size: 0.65em;
-            color: #cbd5e1;
-            margin-top: 6px;
-        }
-
-        /* Listes épurées sans paragraphes (1 idée par ligne) */
-        ul.clean-list {
-            list-style: none;
+            font-family: 'Inter', sans-serif;
+            font-size: 40px;
+            font-weight: 700;
+            color: var(--text-main);
             margin: 0;
             padding: 0;
+            text-transform: none;
+            letter-spacing: -0.02em;
+            text-align: left;
         }
 
-        ul.clean-list li {
+        .slide-subtitle {
+            font-size: 22px;
+            color: var(--text-muted);
+            margin-top: 6px;
+            font-weight: 400;
+        }
+
+        /* Pied de page obligatoire */
+        .slide-footer {
+            position: absolute;
+            bottom: 20px;
+            left: 48px;
+            right: 48px;
+            display: flex;
+            justify-content: space-between;
+            font-size: 16px;
+            color: var(--text-light);
+            border-top: 1px solid var(--border-light);
+            padding-top: 10px;
+        }
+
+        /* Listes épurées (max 3 puces par slide) */
+        ul.slide-bullets {
+            list-style: none;
+            padding: 0;
+            margin: 16px 0 24px 0;
+        }
+
+        ul.slide-bullets li {
             position: relative;
-            padding-left: 24px;
-            margin-bottom: 12px;
-            font-size: 0.75em;
-            line-height: 1.4;
-            color: #e2e8f0;
+            padding-left: 28px;
+            margin-bottom: 18px;
+            font-size: 26px;
+            color: var(--text-main);
+            line-height: 1.45;
         }
 
-        ul.clean-list li::before {
+        ul.slide-bullets li::before {
             content: "•";
             position: absolute;
             left: 6px;
-            color: var(--primary);
-            font-size: 1.4em;
-            line-height: 0.9;
+            color: var(--blue-accent);
+            font-size: 32px;
+            line-height: 1;
+            top: -2px;
         }
 
-        ul.clean-list li strong {
-            color: #ffffff;
-        }
-
-        /* Badges de statut */
-        .badge {
+        /* Statuts des chiffres */
+        .status-tag {
             display: inline-block;
-            font-size: 0.55em;
-            font-weight: 700;
-            padding: 4px 10px;
-            border-radius: 9999px;
-            text-transform: uppercase;
-            letter-spacing: 0.06em;
+            font-size: 16px;
+            font-weight: 600;
+            padding: 2px 8px;
+            border-radius: 4px;
             vertical-align: middle;
-            margin-bottom: 10px;
+            margin-left: 6px;
+            font-family: 'Inter', sans-serif;
+            letter-spacing: 0.02em;
         }
 
-        .badge-warning {
-            background: rgba(251, 191, 36, 0.15);
-            border: 1px solid var(--warning);
-            color: var(--warning);
+        .status-mesure {
+            background-color: #DCFCE7;
+            color: var(--green-success);
         }
 
-        .badge-danger {
-            background: rgba(248, 113, 113, 0.15);
-            border: 1px solid var(--danger);
-            color: var(--danger);
+        .status-optimiste {
+            background-color: #FEF3C7;
+            color: var(--amber-alert);
         }
 
-        .badge-accent {
-            background: rgba(52, 211, 153, 0.15);
-            border: 1px solid var(--accent);
-            color: var(--accent);
+        .status-a-completer {
+            background-color: #F3F4F6;
+            color: var(--text-muted);
+            border: 1px dashed #9CA3AF;
         }
 
-        .badge-sealed {
-            background: rgba(148, 163, 184, 0.15);
-            border: 1px solid var(--text-muted);
-            color: #e2e8f0;
+        /* Gros chiffres académiques */
+        .big-stat-container {
+            display: flex;
+            gap: 48px;
+            margin: 24px 0;
         }
 
-        /* Exemple de tweet en arabe */
-        .arabic-text {
-            font-family: 'Noto Sans Arabic', sans-serif;
-            direction: rtl;
-            text-align: right;
-            font-size: 0.85em;
-            line-height: 1.6;
-            color: #f1f5f9;
-            background: rgba(15, 23, 42, 0.6);
-            border-right: 4px solid var(--primary);
-            border-radius: 6px;
-            padding: 8px 14px;
-            margin-top: 8px;
+        .big-stat-box {
+            flex: 1;
+            border-left: 4px solid var(--blue-accent);
+            padding-left: 20px;
         }
 
-        /* Tableaux de bord comparatifs */
-        .table-custom {
+        .big-stat-box.alert {
+            border-left-color: var(--amber-alert);
+        }
+
+        .big-stat-box.success {
+            border-left-color: var(--green-success);
+        }
+
+        .big-number {
+            font-size: 96px;
+            font-weight: 700;
+            color: var(--blue-accent);
+            line-height: 0.95;
+            letter-spacing: -0.03em;
+            margin-bottom: 8px;
+        }
+
+        .big-number.alert {
+            color: var(--amber-alert);
+        }
+
+        .big-number.success {
+            color: var(--green-success);
+        }
+
+        .big-legend {
+            font-size: 22px;
+            color: var(--text-muted);
+            line-height: 1.35;
+        }
+
+        /* Grilles & Colonnes sobres */
+        .grid-2col {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 36px;
+            margin-top: 16px;
+        }
+
+        /* Tableaux sans bordures verticales */
+        table.academic-table {
             width: 100%;
             border-collapse: collapse;
-            font-size: 0.62em;
-            margin-top: 10px;
+            font-size: 22px;
+            margin-top: 16px;
+            color: var(--text-main);
         }
 
-        .table-custom th {
-            background: rgba(15, 23, 42, 0.85);
-            color: var(--primary);
-            font-weight: 700;
-            padding: 8px 10px;
+        table.academic-table th {
+            background-color: var(--bg-light);
+            color: var(--text-main);
+            font-weight: 600;
             text-align: left;
-            border-bottom: 2px solid var(--border-card);
+            padding: 12px 14px;
+            border-bottom: 2px solid #D1D5DB;
         }
 
-        .table-custom td {
-            padding: 7px 10px;
-            border-bottom: 1px solid rgba(51, 65, 85, 0.5);
-            color: #e2e8f0;
+        table.academic-table td {
+            padding: 11px 14px;
+            border-bottom: 1px solid var(--border-light);
+            vertical-align: middle;
         }
 
-        .table-custom tr.highlight {
-            background: rgba(56, 189, 248, 0.12);
+        table.academic-table tr.ref-row {
             font-weight: 700;
+            background-color: #EFF6FF;
         }
 
-        .table-custom tr.highlight td {
-            color: #ffffff;
+        /* Encadrés sobres d'alerte et de note */
+        .box-alert {
+            border-left: 4px solid var(--amber-alert);
+            background-color: #FFFBEB;
+            padding: 14px 20px;
+            margin-top: 20px;
+            font-size: 22px;
+            color: #92400E;
         }
 
-        /* Images responsives */
-        .slide-figure {
-            max-height: 380px;
+        .box-info {
+            border-left: 4px solid var(--blue-accent);
+            background-color: var(--bg-light);
+            padding: 14px 20px;
+            margin-top: 16px;
+            font-size: 22px;
+            color: var(--text-main);
+        }
+
+        /* Bloc arabe standard */
+        .arabic-block {
+            font-family: 'Noto Sans Arabic', sans-serif;
+            background-color: var(--bg-light);
+            border-left: 4px solid var(--blue-accent);
+            padding: 12px 18px;
+            margin: 12px 0;
+            font-size: 22px;
+            line-height: 1.6;
+            color: #111827;
+        }
+
+        /* Graphiques à barres sobres (CSS pur) */
+        .chart-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 14px;
+            font-size: 20px;
+        }
+
+        .chart-label {
+            width: 260px;
+            color: var(--text-main);
+            font-weight: 500;
+            padding-right: 12px;
+            box-sizing: border-box;
+        }
+
+        .chart-bar-bg {
+            flex: 1;
+            background-color: var(--bg-light);
+            height: 28px;
+            border-radius: 2px;
+            overflow: hidden;
+            display: flex;
+            align-items: center;
+        }
+
+        .chart-bar-fill {
+            background-color: var(--blue-accent);
+            height: 100%;
+        }
+
+        .chart-bar-fill.alert {
+            background-color: var(--amber-alert);
+        }
+
+        .chart-bar-fill.neutral {
+            background-color: #9CA3AF;
+        }
+
+        .chart-val {
+            margin-left: 14px;
+            font-weight: 600;
+            color: var(--text-main);
+            min-width: 80px;
+        }
+
+        /* Cadre image sobre */
+        .image-container {
+            border: 1px solid var(--border-light);
+            background-color: #FFFFFF;
+            padding: 8px;
+            display: inline-block;
+        }
+
+        .image-container img {
+            max-height: 420px;
             width: auto;
-            border-radius: 8px;
-            border: 1px solid var(--border-card);
-            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.4);
-            margin: 0 auto;
             display: block;
         }
 
-        /* Emplacement de figure manquante */
         .figure-placeholder {
-            height: 260px;
+            width: 480px;
+            height: 380px;
+            border: 2px dashed #D1D5DB;
+            background-color: var(--bg-light);
             display: flex;
             align-items: center;
             justify-content: center;
-            background: rgba(15, 23, 42, 0.6);
-            border: 2px dashed var(--border-card);
-            border-radius: 8px;
             color: var(--text-muted);
-            font-size: 0.8em;
-            text-transform: uppercase;
-        }
-
-        /* Note discrète en bas de slide */
-        .slide-footer-note {
-            font-size: 0.52em;
-            color: var(--text-muted);
-            margin-top: 18px;
-            text-align: center;
-            font-style: italic;
-        }
-
-        .arabic-inline {
-            font-family: 'Noto Sans Arabic', sans-serif;
-            direction: rtl;
-            display: inline-block;
-            color: var(--warning);
+            font-size: 20px;
         }
     </style>
 </head>
@@ -281,614 +367,747 @@
     <div class="reveal">
         <div class="slides">
 
-            <!-- ==========================================
-                 SLIDE 1 : TITRE
-                 ========================================== -->
-            <section>
-                <div style="margin-bottom: 20px;">
-                    <span class="badge badge-accent">Module Transformers & LLMs</span>
-                </div>
-                <h1 style="font-size: 2.1em; line-height: 1.15; margin-bottom: 15px; font-weight: 800;">
-                    Détection du Sarcasme<br><span style="color: var(--primary);">en Arabe Dialectal</span>
-                </h1>
-                <p style="font-size: 0.9em; color: #cbd5e1; margin-bottom: 25px;">
-                    Corpus <strong>ArSarcasm-v2</strong> (WANLP 2021) : Déséquilibre, Multi-tâche & Généralisation
-                </p>
-
-                <div class="card" style="max-width: 620px; margin: 0 auto; text-align: center; padding: 16px;">
-                    <div style="font-size: 0.85em; font-weight: 700; color: #ffffff;">Abdelhamid RHERIB</div>
-                    <div style="font-size: 0.72em; color: var(--text-muted); margin-top: 4px;">
-                        Master Big Data & IoT (BDIoT) — ENSAM Casablanca
-                    </div>
-                    <div style="font-size: 0.72em; color: var(--primary); margin-top: 6px;">
-                        Sous la direction de : <strong>Prof. Yassir MATRANE</strong>
-                    </div>
+            <!-- ========================================================
+                 SLIDE 1 : TITRE (Seule slide sombre)
+                 ======================================================== -->
+            <section class="slide-title">
+                <h1>Détection du sarcasme en arabe</h1>
+                <div class="subtitle">ArSarcasm-v2 · TP2</div>
+                <div class="author-block">
+                    <strong>Abdelhamid</strong><br>
+                    Master 2 Transformers & LLMs · Prof. Yassir Matrane<br>
+                    Octobre 2026
                 </div>
 
                 <aside class="notes">
-                    Bonjour Monsieur le Professeur. Je vous présente aujourd'hui mon travail sur le TP2 consacré à la détection du sarcasme dans des tweets en langue arabe sur le corpus ArSarcasm-v2.
-                    Le sarcasme en arabe dialectal est l'un des défis les plus redoutables du TAL contemporain : il combine un fort déséquilibre de classes, une absence d'orthographe standardisée, et une grande subtilité pragmatique.
-                    L'objectif de cette présentation est de vous exposer notre démarche expérimentale rigoureuse : audit des biais, progression méthodique des architectures (de TF-IDF aux Transformers multi-tâches) et tests de généralisation en conditions réalistes.
+                    Bonjour Monsieur le Professeur. Je vous présente mon travail sur le TP2 dédié à la détection du sarcasme dans des tweets en langue arabe à partir du corpus ArSarcasm-v2.
+                    L'objectif de cette soutenance est de vous exposer la démarche expérimentale complète : l'audit initial des données, le problème du déséquilibre, les baselines supervisées et heuristiques, puis l'évaluation rigoureuse de la généralisation.
+                    La présentation suit une stricte traçabilité entre les hypothèses formulées, les mesures effectives et les limites méthodologiques.
                 </aside>
             </section>
 
-            <!-- ==========================================
-                 SLIDE 2 : PROBLÈME ET DONNÉES
-                 ========================================== -->
+            <!-- ========================================================
+                 SLIDE 2 : LE PROBLÈME ET LE PROTOCOLE
+                 ======================================================== -->
             <section>
-                <span class="badge badge-sealed">Méthodologie Stricte</span>
-                <h2>Problème & Protocole Expérimental</h2>
-
-                <div class="grid-3" style="margin-bottom: 18px;">
-                    <div class="card-stat">
-                        <div class="stat-value">11 217</div>
-                        <div class="stat-label">Train Assaini</div>
-                        <div class="stat-sub">Après purge des doublons</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value">1 255</div>
-                        <div class="stat-label">Validation (10 %)</div>
-                        <div class="stat-sub">Stratifié, graine fixe 42</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value danger">3 000</div>
-                        <div class="stat-label">Test Officiel</div>
-                        <div class="stat-sub">Scellé jusqu'à la Partie F</div>
-                    </div>
+                <div class="slide-header">
+                    <h2>Le problème et le protocole</h2>
+                    <div class="slide-subtitle">Cadre formel de la tâche et étanchéité de l'évaluation</div>
                 </div>
 
-                <div class="card">
-                    <ul class="clean-list">
-                        <li><strong>Tâche :</strong> Classification binaire supervisée (<code style="color: var(--primary);">sarcasm ∈ {0, 1}</code>).</li>
-                        <li><strong>Entrée stricte :</strong> Texte brut seul. Les colonnes <code style="color: var(--text-muted);">sentiment</code> et <code style="color: var(--text-muted);">dialect</code> sont interdites en entrée à l'inférence.</li>
-                        <li><strong>Évaluation sans fuite :</strong> Tous les hyperparamètres, seuils de décision et prétraitements sont appris exclusivement sur Train et arbitrés sur Val.</li>
-                    </ul>
+                <ul class="slide-bullets">
+                    <li>
+                        <strong>Tâche binaire :</strong> prédire la colonne <code>sarcasm</code> (0 ou 1) à partir du texte brut seul. Les annotations de sentiment et de dialecte sont strictement exclues de l'inférence.
+                        <span class="status-tag status-mesure">[mesuré]</span>
+                    </li>
+                    <li>
+                        <strong>Split officiel imposé :</strong> 11 217 tweets d'entraînement (après déduplication) et 1 255 tweets de validation (10 % stratifié, graine fixe 42).
+                        <span class="status-tag status-mesure">[mesuré]</span>
+                    </li>
+                    <li>
+                        <strong>Test officiel scellé :</strong> 3 000 tweets conservés intacts sans aucune lecture ni optimisation jusqu'à l'étape finale de généralisation (Partie F).
+                        <span class="status-tag status-mesure">[mesuré]</span>
+                    </li>
+                </ul>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>2 / 13</span>
                 </div>
 
                 <aside class="notes">
-                    Voici le cadre formel du projet.
-                    La tâche consiste à prédire si un tweet est sarcastique ou non. Bien que le corpus contienne des annotations de sentiment et de dialecte, elles ne sont jamais fournies en entrée : le modèle doit trancher uniquement à partir du texte.
-                    Notre protocole repose sur une règle non négociable : le split officiel. Le test de 3 000 tweets a été strictement scellé dans un coffre-fort virtuel tout au long de la conception.
-                    Toutes nos décisions — choix du vocabulaire, pondération des pertes, calibration du seuil de décision — sont prises uniquement sur la validation de 1 255 tweets.
+                    Le corpus ArSarcasm-v2 fournit trois annotations par tweet : sarcasme, sentiment et dialecte. Dans notre protocole, seul le sarcasme constitue la variable cible, et le texte seul sert d'entrée.
+                    Nous appliquons une étanchéité totale : le jeu de validation de 1 255 tweets sert à ajuster les hyperparamètres et à choisir les seuils de décision.
+                    Le jeu de test officiel de 3 000 tweets reste scellé jusqu'à la Partie F, ce qui garantit qu'aucune fuite d'information ne vient biaiser les choix d'architecture.
                 </aside>
             </section>
 
-            <!-- ==========================================
-                 SLIDE 3 : PIÈGES DU CORPUS
-                 ========================================== -->
+            <!-- ========================================================
+                 SLIDE 3 : AUDIT DU TEXTE
+                 ======================================================== -->
             <section>
-                <span class="badge badge-danger">Audit Qualité Données</span>
-                <h2>Pièges Identifiés dans ArSarcasm-v2</h2>
+                <div class="slide-header">
+                    <h2>Audit du texte : anomalies du corpus</h2>
+                    <div class="slide-subtitle">Détection des artefacts et assainissement avant tout entraînement</div>
+                </div>
 
-                <div class="grid-3" style="margin-bottom: 16px;">
-                    <div class="card-stat">
-                        <div class="stat-value warning">32,0 %</div>
-                        <div class="stat-label">Décalage de Format</div>
-                        <div class="stat-sub">Espaces de bord : 4,8 % train vs 32 % test</div>
+                <div class="big-stat-container">
+                    <div class="big-stat-box alert">
+                        <div class="big-number alert">32 %<span class="status-tag status-mesure">[mesuré]</span></div>
+                        <div class="big-legend">Espaces de bord dans le test officiel, contre seulement 4,8 % dans le jeu d'entraînement.</div>
                     </div>
-                    <div class="card-stat">
-                        <div class="stat-value danger">4 tweets</div>
-                        <div class="stat-label">Fuite de Données</div>
-                        <div class="stat-sub">Strictement identiques train/test purgés</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value danger">13 groupes</div>
-                        <div class="stat-label">Labels Contradictoires</div>
-                        <div class="stat-sub">Textes identiques, labels opposés supprimés</div>
+                    <div class="big-stat-box alert">
+                        <div class="big-number alert">13<span class="status-tag status-mesure">[mesuré]</span></div>
+                        <div class="big-legend">Groupes de doublons à labels contradictoires identifiés et supprimés de l'entraînement.</div>
                     </div>
                 </div>
 
-                <div class="card">
-                    <ul class="clean-list">
-                        <li><strong>Espace insécable :</strong> Présent dans 1,0 % de Train mais seulement 0,05 % de Val.</li>
-                        <li><strong>Risque d'artefact :</strong> Un modèle non nettoyé apprendrait à classifier le formatage typographique au lieu du sarcasme.</li>
-                        <li><strong>Assainissement :</strong> Normalisation systématique des espaces et déduplication avant tout apprentissage.</li>
-                    </ul>
+                <ul class="slide-bullets">
+                    <li>
+                        <strong>Décalage de format :</strong> la présence massive d'espaces de bord en test constitue un biais de formatage typographique qu'il a fallu normaliser.
+                    </li>
+                    <li>
+                        <strong>Fuite de données directe :</strong> 4 tweets d'entraînement exactement identiques à des tweets du test ont été détectés et retirés du jeu train.
+                        <span class="status-tag status-mesure">[mesuré]</span>
+                    </li>
+                    <li>
+                        <strong>Corpus assaini :</strong> 54 doublons exacts et 59 après normalisation traités, ramenant le train sain à 11 217 textes uniques.
+                        <span class="status-tag status-mesure">[mesuré]</span>
+                    </li>
+                </ul>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>3 / 13</span>
                 </div>
 
                 <aside class="notes">
-                    Avant même d'entraîner le moindre modèle, nous avons procédé à un audit minutieux du texte brut. Cet audit a révélé trois anomalies critiques.
-                    Premièrement, un décalage de format flagrant : 32 % des tweets du test possèdent des espaces de bord superflus, contre 4,8 % en train. Si l'on ne nettoie pas, un modèle de surface peut exploiter cet artefact.
-                    Deuxièmement, nous avons intercepté 4 tweets d'entraînement exactement identiques à des tweets de test : une fuite directe que nous avons immédiatement retirée du train.
-                    Troisièmement, 13 groupes de tweets avaient un texte identique mais des annotations de sarcasme contradictoires (0 et 1). Nous les avons totalement exclus pour assainir l'apprentissage.
+                    L'audit systématique du texte brut avant modélisation a révélé plusieurs pièges méthodologiques majeurs.
+                    Le premier est une disparité de formatage : 32 % des tweets de test contiennent des espaces superflus en début ou fin de chaîne, contre 4,8 % en train. Un tokenizer sensible aux espaces aurait pu apprendre un artefact de classement.
+                    Le second est la présence de 4 tweets strictement identiques entre train et test, qui auraient artificiellement gonflé les performances en cas de mémorisation.
+                    Enfin, 13 paires de textes avaient des annotations contradictoires. Nous les avons intégralement purgées pour préserver l'intégrité de la supervision.
                 </aside>
             </section>
 
-            <!-- ==========================================
-                 SLIDE 4 : TAUX DE SARCASME
-                 ========================================== -->
+            <!-- ========================================================
+                 SLIDE 4 : DÉSÉQUILIBRE ET DÉCALAGE DE PRIOR
+                 ======================================================== -->
             <section>
-                <span class="badge badge-warning">Distribution & Déséquilibre</span>
-                <h2>Taux de Sarcasme & Corrélations</h2>
-
-                <div class="grid-3" style="margin-bottom: 16px;">
-                    <div class="card-stat">
-                        <div class="stat-value">17,2 %</div>
-                        <div class="stat-label">Train</div>
-                        <div class="stat-sub">1 930 sarcastiques / 11 217</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value">17,3 %</div>
-                        <div class="stat-label">Validation</div>
-                        <div class="stat-sub">217 sarcastiques / 1 255</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value warning">27,4 %</div>
-                        <div class="stat-label">Test Officiel</div>
-                        <div class="stat-sub">821 sarcastiques / 3 000 (+10 pts)</div>
-                    </div>
+                <div class="slide-header">
+                    <h2>Déséquilibre et décalage de prior</h2>
+                    <div class="slide-subtitle">Évolution de la proportion de sarcasme entre les sous-ensembles</div>
                 </div>
 
-                <div class="grid-2">
-                    <div class="card">
-                        <div style="font-size: 0.8em; font-weight: 700; color: var(--primary); margin-bottom: 8px;">
-                            Concentration Émotionnelle (Train)
+                <div style="margin: 28px 0;">
+                    <div class="chart-row">
+                        <div class="chart-label">Train (11 217 tweets)</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 17.2%;"></div>
                         </div>
-                        <ul class="clean-list">
-                            <li><strong>Sentiment Négatif : 41,9 %</strong> de sarcasme.</li>
-                            <li><strong>Sentiment Neutre : 3,0 %</strong> de sarcasme.</li>
-                            <li><strong>Sentiment Positif : 2,7 %</strong> de sarcasme.</li>
-                        </ul>
+                        <div class="chart-val">17,2 % <span class="status-tag status-mesure">[mesuré]</span></div>
                     </div>
-                    <div class="card">
-                        <div style="font-size: 0.8em; font-weight: 700; color: var(--primary); margin-bottom: 8px;">
-                            Variabilité Dialectale (Train)
+                    <div class="chart-row">
+                        <div class="chart-label">Validation (1 255 tweets)</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 17.3%;"></div>
                         </div>
-                        <ul class="clean-list">
-                            <li><strong>Égypte : 34,6 %</strong> | <strong>Golfe : 24,9 %</strong>.</li>
-                            <li><strong>Levant : 21,2 %</strong> | <strong>MSA : 10,7 %</strong>.</li>
-                            <li><strong>Maghreb : 39,5 %</strong> (échantillon infime de 38 tweets).</li>
-                        </ul>
+                        <div class="chart-val">17,3 % <span class="status-tag status-mesure">[mesuré]</span></div>
                     </div>
+                    <div class="chart-row">
+                        <div class="chart-label">Test officiel (3 000 tweets)</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill alert" style="width: 27.4%;"></div>
+                        </div>
+                        <div class="chart-val" style="color: var(--amber-alert);">27,4 % <span class="status-tag status-mesure">[mesuré]</span></div>
+                    </div>
+                </div>
+
+                <ul class="slide-bullets">
+                    <li>
+                        <strong>Prévalence minoritaire :</strong> le sarcasme ne représente qu'un tweet sur six dans les données d'apprentissage (1 930 positifs sur 11 217).
+                    </li>
+                    <li>
+                        <strong>Décalage de distribution (prior shift) :</strong> le test officiel est nettement plus sarcastique (+10,1 points de pourcentage).
+                    </li>
+                    <li>
+                        <strong>Conséquence opérationnelle :</strong> un seuil de décision optimisé sur validation (à 17 %) produira un sous-rappel mécanique sur le test (à 27 %).
+                    </li>
+                </ul>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>4 / 13</span>
                 </div>
 
                 <aside class="notes">
-                    Cette slide résume la distribution du phénomène.
-                    Deux constats majeurs :
-                    D'abord, un saut de prévalence : train et val contiennent ~17 % de tweets sarcastiques, alors que le test grimpe à 27,4 %, soit 10 points de plus. C'est ce qu'on appelle un décalage de prior (prior shift).
-                    Ensuite, le sarcasme sur Twitter arabe est massivement corrélé au sentiment négatif : 42 % des tweets négatifs sont sarcastiques, contre moins de 3 % pour les neutres ou positifs. L'ironie est donc quasi-systématiquement au service du reproche ou de la critique.
-                    Sur le plan dialectal, l'égyptien et le golfe concentrent les taux les plus élevés, tandis que le maghrébin est sous-représenté dans le benchmark.
+                    Cette slide montre la prévalence de la classe sarcastique à travers les différents jeux de données.
+                    En train et en validation, le taux de sarcasme est stable à environ 17 %, ce qui illustre le respect de la stratification lors de notre découpage 90/10.
+                    En revanche, le jeu de test officiel présente une prévalence de 27,4 %, soit une hausse de plus de 10 points.
+                    Ce saut de distribution, appelé décalage de prior, constitue une difficulté centrale : les probabilités prédites par un modèle entraîné sur train nécessiteront une adaptation pour rester optimales en test.
                 </aside>
             </section>
 
-            <!-- ==========================================
-                 SLIDE 5 : ACCURACY TROMPEUSE
-                 ========================================== -->
+            <!-- ========================================================
+                 SLIDE 5 : OÙ SE CONCENTRE LE SARCASME
+                 ======================================================== -->
             <section>
-                <span class="badge badge-danger">Métrique Reine</span>
-                <h2>Le Piège Absolu de l'Accuracy</h2>
-
-                <div class="grid-2" style="margin-bottom: 18px;">
-                    <div class="card-stat">
-                        <div class="stat-value warning">82,7 %</div>
-                        <div class="stat-label">Accuracy Trompeuse</div>
-                        <div class="stat-sub">Classifieur trivial « Toujours Non-Sarcastique »</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value danger">0,0000</div>
-                        <div class="stat-label">F1 Sarcasme Réel</div>
-                        <div class="stat-sub">Rappel = 0,0 % sur les tweets sarcastiques</div>
-                    </div>
+                <div class="slide-header">
+                    <h2>Où se concentre le sarcasme ?</h2>
+                    <div class="slide-subtitle">Répartition par polarité de sentiment et par région dialectale (Train)</div>
                 </div>
 
-                <div class="card">
-                    <ul class="clean-list">
-                        <li><strong>Un modèle aveugle :</strong> Prédire la classe majoritaire donne l'illusion d'une excellente performance (82,7 % d'exactitude).</li>
-                        <li><strong>Inutilité pratique :</strong> Zéro détection du sarcasme. Le système est totalement aveugle à la classe d'intérêt.</li>
-                        <li><strong>Métrique imposée :</strong> <strong>F1 de la classe sarcastique</strong> ($F1_{\text{sarc}}$) et <strong>PR-AUC</strong>. L'accuracy globale est formellement bannie pour guider nos modèles.</li>
-                    </ul>
-                </div>
-
-                <aside class="notes">
-                    Pourquoi l'accuracy est-elle trompeuse ?
-                    Si je construis un algorithme trivial qui prédit systématiquement 0 — c'est-à-dire qui affirme qu'aucun tweet n'est sarcastique —, cet algorithme obtient 82,71 % d'accuracy sur la validation.
-                    Pourtant, son F1-score est de zéro et son rappel est de zéro. Il est totalement inopérant.
-                    C'est pourquoi nous bannissons l'accuracy comme critère de choix. La seule métrique pertinente pour ce TP est le F1-score calculé spécifiquement sur la classe sarcastique positive, complété par la PR-AUC.
-                </aside>
-            </section>
-
-            <!-- ==========================================
-                 SLIDE 6 : RACCOURCIS DE SURFACE
-                 ========================================== -->
-            <section>
-                <span class="badge badge-warning">Audit des Heuristiques</span>
-                <h2>Raccourcis de Surface : Règle vs Modèle</h2>
-
-                <div class="grid-3" style="margin-bottom: 16px;">
-                    <div class="card-stat">
-                        <div class="stat-value">0,3618</div>
-                        <div class="stat-label">Absence d'URL</div>
-                        <div class="stat-sub">Taux sarc. : 23,3 % sans URL vs 8,2 % avec</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value">0,2664</div>
-                        <div class="stat-label">Présence Mention @</div>
-                        <div class="stat-sub">Lien faible avec l'ironie</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value">0,2694</div>
-                        <div class="stat-label">Espaces Anormaux</div>
-                        <div class="stat-sub">Couverture très réduite (5,5 %)</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <div style="font-size: 0.8em; font-weight: 700; color: var(--primary); margin-bottom: 8px;">
-                        Conclusion de l'Audit des Shortcuts (Validation)
-                    </div>
-                    <ul class="clean-list">
-                        <li><strong>Aucune heuristique de surface n'approche la baseline</strong> ($F1 \le 0,36$ vs $0,515$).</li>
-                        <li><strong>L'absence d'URL est informative :</strong> Les tweets d'actualité factuels contiennent des liens externes, tandis que le sarcasme s'exprime dans l'immédiateté verbale.</li>
-                        <li><strong>Nécessité de modélisation :</strong> La syntaxe superficielle ne suffit pas ; la tâche exige d'apprendre la sémantique et la pragmatique.</li>
-                    </ul>
-                </div>
-
-                <aside class="notes">
-                    Nous avons vérifié si le sarcasme pouvait être détecté par de simples règles de surface ("shortcuts").
-                    La règle la plus performante est l'absence d'URL : un tweet sans lien externe a presque 3 fois plus de chances d'être sarcastique (23,3 % contre 8,2 %), car l'ironie est un commentaire direct sans référence documentaire. Cette règle atteint un F1 de 0,3618.
-                    Les mentions et les espaces anormaux ne dépassent pas 0,27.
-                    Conclusion : aucune règle manuelle n'approche les performances d'un vrai modèle statistique. Le sarcasme ne se réduit pas à des marqueurs syntaxiques grossiers.
-                </aside>
-            </section>
-
-            <!-- ==========================================
-                 SLIDE 7 : BASELINE TF-IDF
-                 ========================================== -->
-            <section>
-                <div style="margin-bottom: 12px;">
-                    <span class="badge badge-warning">Score Optimiste (Val)</span>
-                    <span class="badge badge-sealed">Baseline Officielle</span>
-                </div>
-                <h2>Baseline TF-IDF + Régression Logistique</h2>
-
-                <div class="grid-4" style="margin-bottom: 16px;">
-                    <div class="card-stat">
-                        <div class="stat-value">0,5217</div>
-                        <div class="stat-label">PR-AUC Val</div>
-                        <div class="stat-sub">Aire précision-rappel</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value accent">0,5153</div>
-                        <div class="stat-label">F1 Sarcasme Val</div>
-                        <div class="stat-sub">Au seuil optimal 0,42</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value">0,5041</div>
-                        <div class="stat-label">F1 @ 0,50</div>
-                        <div class="stat-sub">Seuil standard</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value">4,81 s</div>
-                        <div class="stat-label">Temps Calcul</div>
-                        <div class="stat-sub">186 332 features</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <ul class="clean-list">
-                        <li><strong>Représentation :</strong> N-grammes de mots (1, 2) + n-grammes de caractères (2 à 5) en bordures de mots (<code style="color: var(--primary);">char_wb</code>), <code style="color: var(--text-muted);">min_df=2</code>.</li>
-                        <li><strong>Équilibrage :</strong> Régression logistique avec <code style="color: var(--primary);">class_weight='balanced'</code> (ajusté sur Train uniquement).</li>
-                        <li><strong>Signalement obligatoire :</strong> Le seuil (0,42) et le F1 (0,5153) sont mesurés sur la validation : il s'agit d'un <strong>score optimiste</strong> servant de borne basse de comparaison.</li>
-                    </ul>
-                </div>
-
-                <aside class="notes">
-                    Voici notre première véritable référence : une baseline linéaire TF-IDF avec Régression Logistique.
-                    Nous extrayons 186 332 caractéristiques combinant n-grammes de mots et n-grammes de caractères sous-mot pour capturer les racines arabes et la morphologie dialectale.
-                    L'entraînement prend moins de 5 secondes.
-                    En optimisant le seuil sur validation (0,42), nous obtenons un F1 de 0,5153 (et 0,5041 au seuil par défaut 0,5).
-                    Comme l'exigent nos règles de rigueur méthodologique, je signale explicitement que ce score est optimiste car le seuil a été choisi sur ce même jeu de validation. C'est l'étalon que chaque architecture neuronale devra battre.
-                </aside>
-            </section>
-
-            <!-- ==========================================
-                 SLIDE 8 : ZERO-SHOT NLI
-                 ========================================== -->
-            <section>
-                <div style="margin-bottom: 12px;">
-                    <span class="badge badge-warning">Score Optimiste (Val)</span>
-                    <span class="badge badge-sealed">Zero-Shot PLM</span>
-                </div>
-                <h2>Zero-Shot NLI (mDeBERTa-v3)</h2>
-
-                <div class="grid-3" style="margin-bottom: 16px;">
-                    <div class="card-stat">
-                        <div class="stat-value accent">0,4119</div>
-                        <div class="stat-label">Français (FR)</div>
-                        <div class="stat-sub">Seuil 0,75 | PR-AUC 0,3495</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value">0,4040</div>
-                        <div class="stat-label">Anglais (EN)</div>
-                        <div class="stat-sub">Seuil 0,79 | PR-AUC 0,3407</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value">0,3871</div>
-                        <div class="stat-label">Arabe (AR)</div>
-                        <div class="stat-sub">Seuil 0,82 | PR-AUC 0,3375</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <ul class="clean-list">
-                        <li><strong>Modèle :</strong> <code style="color: var(--primary);">mDeBERTa-v3-base-xnli</code> (86M paramètres, zéro fine-tuning).</li>
-                        <li><strong>Mécanisme :</strong> Évaluation de l'implication : <em>« Ce tweet est {sarcastique / sérieux} »</em>. Probabilité normalisée sur les deux hypothèses.</li>
-                        <li><strong>Constat contre-intuitif :</strong> La formulation française surpasse l'arabe (0,412 vs 0,387), l'espace multilingue de DeBERTa séparant mieux les concepts abstraits dans les langues majeures de son pré-entraînement.</li>
-                        <li><strong>Limite :</strong> F1 inférieur de 10 points à la baseline TF-IDF (0,41 vs 0,515). Le zero-shot NLI ne saisit pas le dialecte twitter arabe.</li>
-                    </ul>
-                </div>
-
-                <aside class="notes">
-                    Dans la Partie B, nous explorons le zero-shot sans aucun entraînement via mDeBERTa-v3 entraîné sur XNLI.
-                    Nous testons trois formulations d'hypothèses en français, anglais et arabe.
-                    Résultat surprenant : c'est le template français (« Ce tweet est sarcastique ») qui obtient le meilleur F1 (0,4119 au seuil 0,75), devant l'anglais (0,404) et l'arabe (0,387).
-                    Pourquoi ? Parce que l'arabe de mDeBERTa est principalement de l'arabe moderne standard issu de Wikipédia, incapable d'associer le dialecte égyptien ou levantin au concept formel de sarcasme.
-                    Avec 0,41, le zero-shot reste nettement inférieur à notre baseline TF-IDF (0,515).
-                </aside>
-            </section>
-
-            <!-- ==========================================
-                 SLIDE 9 : HEURISTIQUE CAMEL
-                 ========================================== -->
-            <section>
-                <div style="margin-bottom: 12px;">
-                    <span class="badge badge-danger">Alerte Contamination</span>
-                    <span class="badge badge-sealed">Transfert Heuristique</span>
-                </div>
-                <h2>Heuristique CAMeL « Négatif ⇒ Sarcasme »</h2>
-
-                <div class="grid-3" style="margin-bottom: 16px;">
-                    <div class="card-stat">
-                        <div class="stat-value accent">0,4656</div>
-                        <div class="stat-label">F1 Sarcasme Val</div>
-                        <div class="stat-sub">Règle déterministe sans seuil</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value">77,88 %</div>
-                        <div class="stat-label">Rappel Élevé</div>
-                        <div class="stat-sub">169 sarcasmes / 217 détectés</div>
-                    </div>
-                    <div class="card-stat">
-                        <div class="stat-value danger">33,20 %</div>
-                        <div class="stat-label">Faible Précision</div>
-                        <div class="stat-sub">Énorme volume de Faux Positifs</div>
-                    </div>
-                </div>
-
-                <div class="card">
-                    <ul class="clean-list">
-                        <li><strong>Modèle :</strong> <code style="color: var(--primary);">CAMeL-Lab/bert-base-arabic-camelbert-da-sentiment</code> (PLM spécialisé en dialectes arabes).</li>
-                        <li><strong>Règle :</strong> Prédire <code style="color: var(--primary);">sarcasme = 1</code> dès que le modèle prédit un sentiment négatif.</li>
-                        <li><strong>Biais majeur :</strong> Deux tiers des prédictions sont de faux positifs. Tout mécontentement n'est pas sarcastique.</li>
-                        <li><strong>Risque de fuite/contamination :</strong> ArSarcasm-v1 a été construit à partir de sous-ensembles annotés en sentiment (ASTD / SemEval). Une contamination du pré-entraînement de CAMeLBERT n'est pas exclue (non vérifiée).</li>
-                    </ul>
-                </div>
-
-                <aside class="notes">
-                    Sur cette slide, nous testons un transfert heuristique à partir du modèle dialectal CAMeLBERT spécialisé en analyse de sentiment.
-                    La règle est simple : si le modèle prédit un sentiment négatif, on classe le tweet en sarcastique.
-                    Cette heuristique atteint un F1 de 0,4656 avec un excellent rappel de 77,88 %.
-                    Cependant, la précision s'effondre à 33,2 % : les tweets sincèrement mécontents ou en colère sont systématiquement pris pour du sarcasme.
-                    De plus, nous signalons un risque scientifique : CAMeLBERT a pu voir durant son pré-entraînement des corpus proches d'ArSarcasm-v1, d'où un risque potentiel de contamination non vérifié.
-                </aside>
-            </section>
-
-            <!-- ==========================================
-                 SLIDE 10 : PARTIES C À E (MODÈLES PROFONDS)
-                 ========================================== -->
-            <section>
-                <div style="margin-bottom: 8px;">
-                    <span class="badge badge-warning">Scores Optimistes (Val)</span>
-                    <span class="badge badge-accent">Progression Deep Learning</span>
-                </div>
-                <h2>Réseaux Profonds & Transformers (Parties C à E)</h2>
-
-                <div class="grid-2" style="margin-bottom: 12px;">
+                <div class="grid-2col">
                     <div>
-                        <table class="table-custom">
+                        <div style="font-weight: 600; font-size: 22px; color: var(--blue-accent); margin-bottom: 12px;">
+                            Par polarité de sentiment (Train)
+                        </div>
+                        <div class="chart-row">
+                            <div class="chart-label" style="width: 130px;">Négatif</div>
+                            <div class="chart-bar-bg">
+                                <div class="chart-bar-fill alert" style="width: 41.9%;"></div>
+                            </div>
+                            <div class="chart-val">41,9 % <span class="status-tag status-mesure">[mesuré]</span></div>
+                        </div>
+                        <div class="chart-row">
+                            <div class="chart-label" style="width: 130px;">Neutre</div>
+                            <div class="chart-bar-bg">
+                                <div class="chart-bar-fill neutral" style="width: 3.0%;"></div>
+                            </div>
+                            <div class="chart-val">3,0 % <span class="status-tag status-mesure">[mesuré]</span></div>
+                        </div>
+                        <div class="chart-row">
+                            <div class="chart-label" style="width: 130px;">Positif</div>
+                            <div class="chart-bar-bg">
+                                <div class="chart-bar-fill neutral" style="width: 2.7%;"></div>
+                            </div>
+                            <div class="chart-val">2,7 % <span class="status-tag status-mesure">[mesuré]</span></div>
+                        </div>
+                        <div style="font-size: 19px; color: var(--text-muted); margin-top: 10px;">
+                            Le sarcasme est quasi-exclusivement associé au ressentiment ou à la critique indirecte.
+                        </div>
+                    </div>
+
+                    <div>
+                        <div style="font-weight: 600; font-size: 22px; color: var(--blue-accent); margin-bottom: 12px;">
+                            Par dialecte (Train)
+                        </div>
+                        <table class="academic-table" style="font-size: 19px; margin-top: 0;">
                             <thead>
                                 <tr>
-                                    <th>Famille / Architecture</th>
-                                    <th>Seuil</th>
-                                    <th>PR-AUC</th>
-                                    <th>F1 Val</th>
+                                    <th>Dialecte</th>
+                                    <th>Tweets</th>
+                                    <th>Taux sarcasme</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 <tr>
-                                    <td><strong>Baseline TF-IDF</strong></td>
-                                    <td>0,42</td>
-                                    <td>0,5217</td>
-                                    <td>0,5153</td>
+                                    <td>Égypte (egypt)</td>
+                                    <td>2 405</td>
+                                    <td><strong>34,6 %</strong> <span class="status-tag status-mesure">[mesuré]</span></td>
                                 </tr>
                                 <tr>
-                                    <td>C1. BiLSTM (AraVec dégelé)</td>
-                                    <td>0,18</td>
-                                    <td>0,5026</td>
-                                    <td>0,5074</td>
+                                    <td>Golfe (gulf)</td>
+                                    <td>575</td>
+                                    <td><strong>24,9 %</strong> <span class="status-tag status-mesure">[mesuré]</span></td>
                                 </tr>
                                 <tr>
-                                    <td>C2. BiLSTM + Attention custom</td>
-                                    <td>0,26</td>
-                                    <td>0,4910</td>
-                                    <td>0,5099</td>
+                                    <td>Levant (levant)</td>
+                                    <td>566</td>
+                                    <td><strong>21,2 %</strong> <span class="status-tag status-mesure">[mesuré]</span></td>
                                 </tr>
                                 <tr>
-                                    <td>C3. Mini-Transformer (SANS pos)</td>
-                                    <td>0,26</td>
-                                    <td>0,4876</td>
-                                    <td>0,5170</td>
+                                    <td>Arabe standard (msa)</td>
+                                    <td>7 633</td>
+                                    <td><strong>10,7 %</strong> <span class="status-tag status-mesure">[mesuré]</span></td>
                                 </tr>
                                 <tr>
-                                    <td>D2. AraBERT gelé + Attention</td>
-                                    <td>0,32</td>
-                                    <td>0,6976</td>
-                                    <td>0,6652</td>
-                                </tr>
-                                <tr>
-                                    <td>E1. AraBERT mono-tâche</td>
-                                    <td>0,50</td>
-                                    <td>0,7097</td>
-                                    <td>0,6797</td>
-                                </tr>
-                                <tr class="highlight">
-                                    <td><strong>E2. MARBERTv2 Multi-Tâche (λ=0,3)</strong></td>
-                                    <td><strong>0,72</strong></td>
-                                    <td><strong>0,6726</strong></td>
-                                    <td><strong>0,6812</strong></td>
+                                    <td>Maghreb (magreb)</td>
+                                    <td>38</td>
+                                    <td><em>39,5 % (non interprétable)</em></td>
                                 </tr>
                             </tbody>
                         </table>
-                        <div class="slide-footer-note">
-                            Multi-tâche sur 3 graines (λ=0,3) : Moyenne F1 = <strong>0,6631 ± 0,0129</strong>. À λ=1,0, interférence de tâche (F1=0,6667).
-                        </div>
-                    </div>
-
-                    <div style="text-align: center;">
-                        <img src="assets/attention_d2_5_tweets.png" alt="Poids d'attention D2 sur 5 tweets" class="slide-figure" style="max-height: 290px;">
-                        <div style="font-size: 0.58em; color: var(--text-muted); margin-top: 6px;">
-                            Poids d'attention (D2) : focalisation sur les rires répétés <span class="arabic-inline">هههههه</span> et le vocabulaire ironique.
-                        </div>
                     </div>
                 </div>
 
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>5 / 13</span>
+                </div>
+
                 <aside class="notes">
-                    Voici la synthèse de notre progression architecturale sur le jeu de validation.
-                    En Partie C, les modèles entraînés sur embeddings statiques AraVec plafonnent à 0,51 : l'ablation de l'encodage positionnel dans le Mini-Transformer montre que l'ordre strict compte moins que la présence de mots clés.
-                    Le saut qualitatif intervient en Partie D avec les PLM contextualisés : AraBERT gelé couplé à une tête d'attention personnalisée bondit à 0,6652 de F1 (+15 points !).
-                    La figure de droite illustre cette couche d'attention : le réseau concentre massivement ses poids sur les rires répétés ههههه et sur le lexique sarcastique.
-                    Enfin, en Partie E, le fine-tuning complet de MARBERTv2 avec apprentissage multi-tâche (sarcasme + régularisation sentiment à lambda = 0,3) établit le record absolu du TP avec un F1 de 0,6812.
+                    L'analyse croisée met en lumière deux caractéristiques structurelles du sarcasme dans Twitter arabophone.
+                    D'une part, une corrélation massive avec le sentiment négatif : 42 % des tweets négatifs sont sarcastiques, contre moins de 3 % pour les tweets positifs ou neutres. L'ironie sert ici de véhicule de dénigrement.
+                    D'autre part, une forte variabilité dialectale : l'égyptien concentre un tiers de tweets sarcastiques, tandis que l'arabe standard moderne en compte seulement 10 %.
+                    Enfin, nous soulignons que le sous-groupe maghrébin ne compte que 38 tweets dans l'ensemble d'entraînement, ce qui le rend statistiquement non interprétable pour cette région.
                 </aside>
             </section>
 
             <!-- ==========================================
-                 SLIDE 11 : PARTIE F (GÉNÉRALISATION & TEST)
+                 SLIDE 6 : ACCURACY TROMPEUSE
                  ========================================== -->
             <section>
-                <div style="margin-bottom: 8px;">
-                    <span class="badge badge-danger">Test Officiel Déverrouillé</span>
-                    <span class="badge badge-accent">Audit de Généralisation</span>
+                <div class="slide-header">
+                    <h2>Le piège de l’exactitude (accuracy)</h2>
+                    <div class="slide-subtitle">Pourquoi l'accuracy brute masque l'échec complet sur la classe d'intérêt</div>
                 </div>
-                <h2>Partie F : Généralisation & Décalage de Prior</h2>
 
-                <div class="grid-2" style="align-items: center; margin-bottom: 10px;">
+                <div class="big-stat-container">
+                    <div class="big-stat-box alert">
+                        <div class="big-number alert">82,7 %<span class="status-tag status-mesure">[mesuré]</span></div>
+                        <div class="big-legend">Accuracy obtenue par un classifieur trivial prédisant toujours « non sarcastique ».</div>
+                    </div>
+                    <div class="big-stat-box alert">
+                        <div class="big-number alert">0,0<span class="status-tag status-mesure">[mesuré]</span></div>
+                        <div class="big-legend">Score F1 sarcastique correspondant (zéro détection, rappel nul à 0,0 %).</div>
+                    </div>
+                </div>
+
+                <ul class="slide-bullets">
+                    <li>
+                        <strong>Biais de la classe majoritaire :</strong> avec 82,7 % de tweets non sarcastiques en validation, un modèle constant donne l'illusion d'une forte performance.
+                    </li>
+                    <li>
+                        <strong>Inutilité clinique :</strong> ce classifieur trivial échoue sur 100 % des cas réels de sarcasme, rendant l'accuracy impropre à guider l'apprentissage.
+                    </li>
+                    <li>
+                        <strong>Métriques d'arbitrage :</strong> nous retenons exclusivement le F1 de la classe sarcastique (F1<sub>sarc</sub>) et la PR-AUC pour comparer les approches.
+                    </li>
+                </ul>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>6 / 13</span>
+                </div>
+
+                <aside class="notes">
+                    Dans un contexte de classes déséquilibrées, l'exactitude globale est une métrique trompeuse.
+                    Si l'on évalue un classifieur trivial qui prédit systématiquement la classe 0, il atteint 82,71 % d'accuracy sur notre jeu de validation.
+                    Pourtant, sa valeur pratique est nulle : son rappel est de zéro et son score F1 est de zéro sur la classe sarcastique.
+                    C'est pourquoi nous rejetons formellement l'accuracy pour piloter les choix de modélisation et nous concentrons nos évaluations sur le F1 de la classe positive et l'aire sous la courbe précision-rappel.
+                </aside>
+            </section>
+
+            <!-- ==========================================
+                 SLIDE 7 : RACCOURCIS DE SURFACE
+                 ========================================== -->
+            <section>
+                <div class="slide-header">
+                    <h2>Raccourcis de surface</h2>
+                    <div class="slide-subtitle">Évaluation de règles heuristiques naïves sur le jeu de validation</div>
+                </div>
+
+                <table class="academic-table">
+                    <thead>
+                        <tr>
+                            <th>Règle déterministe testée</th>
+                            <th>Couverture val</th>
+                            <th>Taux sarcasme</th>
+                            <th>F1 sarc (val)</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Absence d'URL ⇒ sarcastique</td>
+                            <td>76,7 %</td>
+                            <td>23,3 % (vs 8,2 % avec)</td>
+                            <td>0,3618</td>
+                            <td><span class="status-tag status-mesure">[mesuré]</span></td>
+                        </tr>
+                        <tr>
+                            <td>Absence de mention (@) ⇒ sarcastique</td>
+                            <td>48,6 %</td>
+                            <td>19,8 %</td>
+                            <td>0,2664</td>
+                            <td><span class="status-tag status-mesure">[mesuré]</span></td>
+                        </tr>
+                        <tr>
+                            <td>Espace anormal (bord ou insécable) ⇒ sarc.</td>
+                            <td>5,5 %</td>
+                            <td>26,1 %</td>
+                            <td>0,1958</td>
+                            <td><span class="status-tag status-mesure">[mesuré]</span></td>
+                        </tr>
+                        <tr class="ref-row">
+                            <td>Baseline TF-IDF + Régression logistique</td>
+                            <td>100,0 %</td>
+                            <td>—</td>
+                            <td>0,5153</td>
+                            <td><span class="status-tag status-optimiste">[optimiste]</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <ul class="slide-bullets" style="margin-top: 24px;">
+                    <li>
+                        <strong>Signal de l'URL :</strong> l'absence d'URL est corrélée au sarcasme (F1 = 0,3618), car les tweets d'actualité factuels incluent souvent des liens externes.
+                    </li>
+                    <li>
+                        <strong>Insuffisance des raccourcis :</strong> aucune règle de surface n'approche la baseline supervisée (écart de plus de 15 points de F1).
+                    </li>
+                </ul>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>7 / 13</span>
+                </div>
+
+                <aside class="notes">
+                    Avant de concevoir des modèles statistiques, nous avons testé si des règles simples de surface pouvaient prédire le sarcasme.
+                    La règle la plus performante repose sur l'absence d'URL : les tweets sans hyperlien ont un taux de sarcasme de 23,3 % contre 8,2 % avec lien, atteignant un F1 de 0,3618.
+                    Les mentions et les artefacts d'espacement obtiennent des scores encore plus modestes, sous 0,27.
+                    Le tableau démontre qu'aucun raccourci heuristique ne concurrence la baseline supervisée à 0,5153. La détection du sarcasme nécessite impérativement un traitement du contenu textuel.
+                </aside>
+            </section>
+
+            <!-- ==========================================
+                 SLIDE 8 : BASELINE TF-IDF + RÉGRESSION LOGISTIQUE
+                 ========================================== -->
+            <section>
+                <div class="slide-header">
+                    <h2>Baseline TF-IDF + régression logistique</h2>
+                    <div class="slide-subtitle">Point de référence supervisé linéaire sur le vocabulaire n-grammes</div>
+                </div>
+
+                <div class="big-stat-container">
+                    <div class="big-stat-box">
+                        <div class="big-number">0,5217<span class="status-tag status-optimiste">[optimiste]</span></div>
+                        <div class="big-legend">PR-AUC sur validation (seuil de probabilité optimal à 0,42).</div>
+                    </div>
+                    <div class="big-stat-box success">
+                        <div class="big-number success">0,5153<span class="status-tag status-optimiste">[optimiste]</span></div>
+                        <div class="big-legend">F1 sarcastique sur validation (0,5041 au seuil standard de 0,50).</div>
+                    </div>
+                </div>
+
+                <ul class="slide-bullets">
+                    <li>
+                        <strong>Espace de représentation :</strong> 186 332 variables combinant n-grammes de mots (1 à 2) et n-grammes de caractères sous-mots (char_wb 2 à 5, min_df=2).
+                        <span class="status-tag status-mesure">[mesuré]</span>
+                    </li>
+                    <li>
+                        <strong>Gestion du déséquilibre :</strong> régression logistique avec pondération inverse des classes (<code>class_weight='balanced'</code>), entraînée en 3,39 s.
+                        <span class="status-tag status-mesure">[mesuré]</span>
+                    </li>
+                    <li>
+                        <strong>Mention de rigueur :</strong> ce score F1 de 0,5153 est <em>optimiste</em> car le seuil 0,42 a été directement calibré sur l'échantillon de validation.
+                    </li>
+                </ul>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>8 / 13</span>
+                </div>
+
+                <aside class="notes">
+                    Notre référence supervisée est une régression logistique entraînée sur des caractéristiques TF-IDF.
+                    Nous extrayons 186 332 n-grammes de mots et de sous-mots avec bordures, ce qui permet de capturer la morphologie et les affixes arabes.
+                    Le modèle apprend en 3,4 secondes sur CPU avec un rééquilibrage de classe analytique.
+                    Il atteint une PR-AUC de 0,5217 et un score F1 de 0,5153 au seuil optimisé de 0,42.
+                    Conformément aux exigences de rigueur, nous rappelons que ce score est optimiste puisqu'il découle d'un choix de seuil opéré sur ce même jeu de validation.
+                </aside>
+            </section>
+
+            <!-- ==========================================
+                 SLIDE 9 : ZERO-SHOT NLI
+                 ========================================== -->
+            <section>
+                <div class="slide-header">
+                    <h2>Zero-shot NLI (mDeBERTa-v3)</h2>
+                    <div class="slide-subtitle">Inférence par implication textuelle sans aucun réentraînement supervisé</div>
+                </div>
+
+                <table class="academic-table">
+                    <thead>
+                        <tr>
+                            <th>Langue de l'hypothèse</th>
+                            <th>Template textuel injecté</th>
+                            <th>Seuil val</th>
+                            <th>PR-AUC val</th>
+                            <th>F1 sarc (val)</th>
+                            <th>Statut</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr class="ref-row">
+                            <td>Français (FR)</td>
+                            <td>« Ce tweet est {sarcastique / sérieux} »</td>
+                            <td>0,75</td>
+                            <td>0,3495</td>
+                            <td>0,4119</td>
+                            <td><span class="status-tag status-optimiste">[optimiste]</span></td>
+                        </tr>
+                        <tr>
+                            <td>Anglais (EN)</td>
+                            <td>"This tweet is {sarcastic / serious}"</td>
+                            <td>0,79</td>
+                            <td>0,3407</td>
+                            <td>0,4040</td>
+                            <td><span class="status-tag status-optimiste">[optimiste]</span></td>
+                        </tr>
+                        <tr>
+                            <td>Arabe (AR)</td>
+                            <td>
+                                <span class="arabic-block" style="display: inline-block; padding: 2px 8px; margin: 0;" dir="rtl" lang="ar">
+                                    هذه التغريدة {ساخرة / جادة}
+                                </span>
+                            </td>
+                            <td>0,82</td>
+                            <td>0,3375</td>
+                            <td>0,3871</td>
+                            <td><span class="status-tag status-optimiste">[optimiste]</span></td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <ul class="slide-bullets" style="margin-top: 24px;">
+                    <li>
+                        <strong>Effet de formulation :</strong> le modèle mDeBERTa-v3 (86M paramètres) n'a jamais vu ArSarcasm ; le template français offre la séparation la moins dégradée.
+                    </li>
+                    <li>
+                        <strong>Limite du zero-shot :</strong> avec un F1 maximal de 0,4119, cette approche reste 10 points en dessous de la baseline TF-IDF supervisée.
+                    </li>
+                </ul>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>9 / 13</span>
+                </div>
+
+                <aside class="notes">
+                    Nous testons ensuite une approche zero-shot en formulant la tâche comme une inférence textuelle (NLI) avec mDeBERTa-v3 entraîné sur XNLI.
+                    Le tweet sert de prémisse, et l'hypothèse oppose « sarcastique » à « sérieux ».
+                    Les résultats montrent que la formulation compte : le template français obtient un F1 de 0,4119 au seuil 0,75, devançant l'anglais à 0,4040 et l'arabe à 0,3871.
+                    L'arabe dialectal de Twitter est trop distant de l'arabe formel présent dans les données de pré-entraînement NLI. L'approche reste nettement en retrait de la baseline linéaire.
+                </aside>
+            </section>
+
+            <!-- ==========================================
+                 SLIDE 10 : HEURISTIQUE CAMELBERT
+                 ========================================== -->
+            <section>
+                <div class="slide-header">
+                    <h2>Heuristique CAMeLBERT</h2>
+                    <div class="slide-subtitle">Transfert par analyse de sentiment : règle « négatif ⇒ sarcastique »</div>
+                </div>
+
+                <div class="big-stat-container">
+                    <div class="big-stat-box">
+                        <div class="big-number">0,4656<span class="status-tag status-optimiste">[optimiste]</span></div>
+                        <div class="big-legend">F1 sarcastique sur validation (décision déterministe sans seuil).</div>
+                    </div>
+                    <div class="big-stat-box alert">
+                        <div class="big-number alert">77,9 %<span class="status-tag status-mesure">[mesuré]</span></div>
+                        <div class="big-legend">Rappel très élevé, mais contrebalancé par une précision faible de 33,2 %.</div>
+                    </div>
+                </div>
+
+                <div class="box-alert">
+                    <strong>Contamination possible, non vérifiée :</strong> ArSarcasm-v1 a été construit à partir de sous-ensembles annotés en sentiment (ASTD, SemEval), proches des corpus ayant servi au pré-entraînement de CAMeLBERT.
+                </div>
+
+                <ul class="slide-bullets" style="margin-top: 18px;">
+                    <li>
+                        <strong>Asymétrie précision-rappel :</strong> le modèle capture 169 sarcasmes sur 217, mais prédit 40,6 % de tweets sarcastiques (deux tiers de faux positifs).
+                        <span class="status-tag status-mesure">[mesuré]</span>
+                    </li>
+                </ul>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>10 / 13</span>
+                </div>
+
+                <aside class="notes">
+                    S'appuyant sur la corrélation vue en slide 5, nous testons un classifieur de sentiment dialectal CAMeLBERT avec la règle déterministe : si le sentiment est négatif, prédire sarcastique.
+                    Cette règle atteint un F1 de 0,4656 porté par un rappel remarquable de 77,9 %.
+                    Cependant, la précision s'effondre à 33,2 % : le modèle prédit 40,6 % de sarcasme, classant à tort toute plainte ou colère comme de l'ironie.
+                    Nous signalons un point d'attention méthodologique : une contamination est possible car ArSarcasm réutilise des données issues d'ASTD et SemEval, mais cette hypothèse n'a pas été formellement vérifiée.
+                </aside>
+            </section>
+
+            <!-- ==========================================
+                 SLIDE 11 : COMPARAISON SUR VALIDATION
+                 ========================================== -->
+            <section>
+                <div class="slide-header">
+                    <h2>Comparaison sur validation</h2>
+                    <div class="slide-subtitle">Synthèse du F1 sarcastique des familles explorées (Parties A à E)</div>
+                </div>
+
+                <div style="margin: 14px 0;">
+                    <div class="chart-row">
+                        <div class="chart-label">Baseline TF-IDF + LogReg</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 51.5%;"></div>
+                        </div>
+                        <div class="chart-val">0,515 <span class="status-tag status-optimiste">[optimiste]</span></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">CAMeLBERT (« négatif ⇒ sarc. »)</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 46.6%;"></div>
+                        </div>
+                        <div class="chart-val">0,466 <span class="status-tag status-optimiste">[optimiste]</span></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">Zero-shot NLI mDeBERTa (FR)</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 41.2%;"></div>
+                        </div>
+                        <div class="chart-val">0,412 <span class="status-tag status-optimiste">[optimiste]</span></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">C1. BiLSTM (AraVec dégelé)</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 50.7%;"></div>
+                        </div>
+                        <div class="chart-val">0,507 <span class="status-tag status-optimiste">[optimiste]</span></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">C2. BiLSTM + Attention custom</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 51.0%;"></div>
+                        </div>
+                        <div class="chart-val">0,510 <span class="status-tag status-optimiste">[optimiste]</span></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">C3. Mini-Transformer (sans pos)</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 51.7%;"></div>
+                        </div>
+                        <div class="chart-val">0,517 <span class="status-tag status-optimiste">[optimiste]</span></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">D2. AraBERT gelé + Attention</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 66.5%;"></div>
+                        </div>
+                        <div class="chart-val">0,665 <span class="status-tag status-optimiste">[optimiste]</span></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">E1. AraBERT mono-tâche</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 68.0%;"></div>
+                        </div>
+                        <div class="chart-val">0,680 <span class="status-tag status-optimiste">[optimiste]</span></div>
+                    </div>
+                    <div class="chart-row">
+                        <div class="chart-label">E2. MARBERTv2 Multi-Tâche (λ=0,3)</div>
+                        <div class="chart-bar-bg">
+                            <div class="chart-bar-fill" style="width: 68.1%; background-color: var(--green-success);"></div>
+                        </div>
+                        <div class="chart-val" style="color: var(--green-success);">0,681 <span class="status-tag status-optimiste">[optimiste]</span></div>
+                    </div>
+                </div>
+
+                <ul class="slide-bullets" style="margin-top: 10px;">
+                    <li>
+                        <strong>Meilleur score de validation :</strong> MARBERTv2 multi-tâche atteint F1 = 0,6812 (seuil 0,72), avec un écart non significatif avec E1 (McNemar p = 0,13).
+                        <span class="status-tag status-optimiste">[optimiste]</span>
+                    </li>
+                    <li>
+                        <strong>Avertissement méthodologique :</strong> l'ensemble des scores sur cette slide sont <em>optimistes</em> car leurs seuils ont été choisis sur validation.
+                    </li>
+                </ul>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>11 / 13</span>
+                </div>
+
+                <aside class="notes">
+                    Ce graphique récapitule les performances comparées sur le jeu de validation pour l'ensemble des familles explorées.
+                    Les réseaux sur embeddings statiques AraVec (C1 à C3) plafonnent autour de 0,51, au niveau de la baseline TF-IDF.
+                    Le saut qualitatif intervient avec les modèles pré-entraînés contextualisés : AraBERT gelé avec tête d'attention (D2) bondit à 0,665, et son fine-tuning complet (E1) atteint 0,680.
+                    Enfin, MARBERTv2 multi-tâche à lambda=0,3 obtient le meilleur F1 de validation à 0,6812, bien que le test de McNemar indique que l'écart avec E1 n'est pas statistiquement significatif (p = 0,13).
+                    Nous rappelons que ces scores de validation sont optimistes en raison de l'arbitrage du seuil sur ces mêmes données.
+                </aside>
+            </section>
+
+            <!-- ==========================================
+                 SLIDE 12 : PARTIE F - GÉNÉRALISATION SUR LE TEST OFFICIEL
+                 ========================================== -->
+            <section>
+                <div class="slide-header">
+                    <h2>Partie F : généralisation sur le test officiel</h2>
+                    <div class="slide-subtitle">Évaluation sans fuite sur les 3 000 tweets du test scellé</div>
+                </div>
+
+                <div class="grid-2col" style="align-items: center;">
                     <div>
-                        <div class="grid-2" style="margin-bottom: 12px;">
-                            <div class="card-stat">
-                                <div class="stat-value accent">0,6266</div>
-                                <div class="stat-label">F1 Test Officiel</div>
-                                <div class="stat-sub">Seuil val 0,72 | IC 95 % : [0,599 ; 0,653]</div>
+                        <div class="big-stat-box success" style="margin-bottom: 20px;">
+                            <div class="big-number success" style="font-size: 80px;">
+                                0,6266<span class="status-tag status-mesure">[mesuré]</span>
                             </div>
-                            <div class="card-stat">
-                                <div class="stat-value warning">0,6428</div>
-                                <div class="stat-label">F1 Seuil a Posteriori</div>
-                                <div class="stat-sub">Seuil optimal = 0,57 (+0,0162)</div>
-                            </div>
+                            <div class="big-legend">F1 test officiel (seuil val 0,72, graine 42). IC 95 % : [0,5991 ; 0,6528] par 1 000 bootstraps.</div>
                         </div>
 
-                        <div class="card">
-                            <ul class="clean-list">
-                                <li><strong>Décalage de Prior (+10 pts) :</strong> Taux sarcasme 17,3 % val vs 27,4 % test. Explique la contraction du F1 de 0,681 à 0,627 sans recalibration.</li>
-                                <li><strong>Dialecte non vu (Égyptien retiré) :</strong> F1 = <strong>0,7715</strong> (vs 0,7616 avec égyptien en train) $\rightarrow$ invariance dialectale prouvée !</li>
-                                <li><strong>Suppression des URLs/mentions :</strong> F1 test = <strong>0,6271</strong> ($\Delta = +0,0005$). Aucun sur-apprentissage de raccourcis.</li>
-                                <li><strong>Ablation des marqueurs de surface :</strong> <strong>93,67 %</strong> des sarcasmes restent détectés sans emojis ni rires <span class="arabic-inline">هههه</span>.</li>
-                            </ul>
-                        </div>
+                        <ul class="slide-bullets">
+                            <li>
+                                <strong>Épreuve du prior shift :</strong> le taux de sarcasme passe de 17,3 % en val à 27,4 % en test (+10,1 points), déplaçant le seuil optimal à 0,57 (F1 = 0,6428).
+                                <span class="status-tag status-mesure">[mesuré]</span>
+                            </li>
+                            <li>
+                                <strong>Vérification des prédictions :</strong> le score officiel de 0,6266 est adossé au fichier de prédictions complet archivé dans <code>predictions/MARBERTv2_multitask_seed42.csv</code>.
+                                <span class="status-tag status-mesure">[mesuré]</span>
+                            </li>
+                            <li>
+                                <strong>Audits dialectaux et ablation (F2 à F4) :</strong> valeurs non reproduites car les fichiers de prédictions individuels ne sont pas archivés dans le dépôt.
+                                <span class="status-tag status-a-completer">[non reproduit]</span>
+                            </li>
+                        </ul>
                     </div>
 
                     <div style="text-align: center;">
-                        <img src="assets/prior_shift_f1_curve.png" alt="Courbe F1 en fonction du seuil sous prior shift" class="slide-figure" style="max-height: 290px;">
-                        <div style="font-size: 0.58em; color: var(--text-muted); margin-top: 6px;">
-                            Courbe de transfert : le pic de F1 glisse de 0,72 (val) à 0,57 (test) en raison de la hausse de prévalence.
+                        <div class="image-container">
+                            <img src="assets/prior_shift_f1_curve.png" alt="Courbe F1 en fonction du seuil sous prior shift">
+                        </div>
+                        <div style="font-size: 16px; color: var(--text-muted); margin-top: 8px;">
+                            Courbe de sensibilité du F1 en fonction du seuil décisionnel (audit de transfert).
                         </div>
                     </div>
                 </div>
 
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>12 / 13</span>
+                </div>
+
                 <aside class="notes">
-                    Nous ouvrons enfin le test officiel scellé de 3 000 tweets en Partie F.
-                    Au seuil officiel fixé sur validation (0,72), notre modèle final MARBERTv2 multi-tâche atteint un F1 de 0,6266, encadré par un intervalle de confiance bootstrap à 95 % entre 0,5991 et 0,6528.
-                    Pourquoi cette baisse par rapport aux 0,6812 de validation ? La figure de droite l'explique parfaitement : le décalage de prévalence (+10 points de sarcasme en test) déplace le seuil optimal vers 0,57. Si le seuil était recalibré, le F1 remonterait à 0,6428.
-                    Mais les trois tests de robustesse sont remarquables :
-                    1. En retirant complètement les 2 405 tweets égyptiens du train, le modèle obtient 0,7715 sur l'égyptien en test, prouvant que le pré-entraînement dialectal de MARBERT absorbe le transfert sans aucune perte !
-                    2. Supprimer les URLs et mentions ne change rien au score (0,6271).
-                    3. Enfin, en effaçant tous les emojis et rires, le modèle conserve 93,7 % de ses détections : il comprend véritablement le sens sémantique de l'ironie.
+                    Nous abordons l'ouverture du jeu de test officiel scellé de 3 000 tweets en Partie F.
+                    Au seuil officiel fixé sur validation (0,72), le modèle final MARBERTv2 multi-tâche atteint un F1 de 0,6266 sur la graine 42, validé par un intervalle de confiance bootstrap à 95 % entre 0,5991 et 0,6528.
+                    Le décalage de prévalence (+10,1 points de sarcasme en test) explique la contraction par rapport à la validation, déplaçant le seuil optimal vers 0,57.
+                    Conformément aux exigences de rigueur, nous signalons que les expériences F2 (retrait égyptien) et F4 (ablation emojis/rires) sont marquées non reproduites tant que leurs fichiers de prédictions dédiés ne sont pas archivés dans le dépôt.
                 </aside>
             </section>
 
             <!-- ==========================================
-                 SLIDE 12 : DÉCISION ET LIMITES
+                 SLIDE 13 : DÉCISION, LIMITES ET SUITE
                  ========================================== -->
             <section>
-                <span class="badge badge-accent">Production & REX</span>
-                <h2>Décision Finale, Déploiement & Limites</h2>
-
-                <div class="grid-2" style="margin-bottom: 14px;">
-                    <div class="card">
-                        <div style="font-size: 0.85em; font-weight: 700; color: var(--accent); margin-bottom: 10px;">
-                            Recommandation pour la Production
-                        </div>
-                        <ul class="clean-list">
-                            <li><strong>Modèle retenu : MARBERTv2 Multi-Tâche</strong> (sarcasme + sentiment, λ=0,3).</li>
-                            <li><strong>Monitoring de dérive :</strong> Suivi en temps réel de la distribution des probabilités (test de Kolmogorov-Smirnov).</li>
-                            <li><strong>Recalibration bayésienne du seuil :</strong> Réajustement non supervisé via l'algorithme EM (Saerens et al.) pour annuler l'impact du prior shift sans ré-étiquetage.</li>
-                        </ul>
-                    </div>
-
-                    <div class="card">
-                        <div style="font-size: 0.85em; font-weight: 700; color: var(--danger); margin-bottom: 10px;">
-                            Analyse de 30 Erreurs & Limites Majeures
-                        </div>
-                        <ul class="clean-list">
-                            <li><strong>Marqueurs trompeurs (50 % des erreurs) :</strong> 100 % des Faux Positifs ! Tweets amicaux contenant des rires <span class="arabic-inline">هههه</span> mal interprétés.</li>
-                            <li><strong>Contexte du monde manquant (30 % des erreurs) :</strong> Faux Négatifs sur l'actualité politique/sportive. Solution future : module <strong>RAG</strong>.</li>
-                            <li><strong>Lacune Maghreb :</strong> Seulement 38 tweets dans ArSarcasm-v2. Nécessite des adaptateurs LoRA spécifiques pour la darija marocaine.</li>
-                        </ul>
-                    </div>
+                <div class="slide-header">
+                    <h2>Décision, limites et suite</h2>
+                    <div class="slide-subtitle">Synthèse opérationnelle, limites identifiées et ouverture</div>
                 </div>
 
-                <div class="card" style="padding: 10px 16px;">
-                    <div style="font-size: 0.72em; color: #cbd5e1; text-align: center;">
-                        <strong>Matrice de Confusion Test :</strong> VN = 1 823 | FP = 356 | FN = 284 | VP = 537 | Exactitude = 78,67 % | Précision = 60,13 % | Rappel = 65,41 %
-                    </div>
+                <ul class="slide-bullets">
+                    <li>
+                        <strong>Modèle retenu pour déploiement :</strong> MARBERTv2 Multi-Tâche (λ=0,3, seuil val 0,72), avec F1 test = 0,6266 (graine 42).
+                        <span class="status-tag status-mesure">[mesuré]</span>
+                    </li>
+                    <li>
+                        <strong>Trois limites fondamentales identifiées :</strong>
+                        <div style="font-size: 22px; color: var(--text-muted); margin-top: 6px; line-height: 1.45;">
+                            1. <em>Contexte factuel manquant :</em> 53 % des faux négatifs portent sur l'actualité politique/sportive indétectable sans connaissances du monde externe.<br>
+                            2. <em>Lacune maghrébine :</em> seulement 38 tweets dans ArSarcasm-v2 <span class="status-tag status-mesure">[mesuré]</span>, imposant des adaptateurs régionaux.<br>
+                            3. <em>Décalage de distribution :</em> nécessité d'une politique de recalibration non supervisée du seuil en production.
+                        </div>
+                    </li>
+                    <li>
+                        <strong>Dépôt de code et reproductibilité :</strong> <code>github.com/AbdelhamidRb/tp2-sarcasme-arabe</code>
+                    </li>
+                </ul>
+
+                <div style="text-align: center; margin-top: 36px; padding: 18px; border: 2px solid var(--border-light); background-color: var(--bg-light);">
+                    <span style="font-size: 26px; font-weight: 600; color: var(--blue-accent); letter-spacing: 0.05em; text-transform: uppercase;">
+                        Questions & Échanges
+                    </span>
+                </div>
+
+                <div class="slide-footer">
+                    <span>TP2 · ArSarcasm-v2</span>
+                    <span>13 / 13</span>
                 </div>
 
                 <aside class="notes">
-                    Pour la mise en production, nous retenons sans ambiguïté MARBERTv2 Multi-Tâche.
-                    Pour gérer le décalage de prior observé en test, nous préconisons une recalibration bayésienne du seuil via l'algorithme EM de Saerens, qui réajuste le seuil de décision à chaud sans nécessiter de nouvelles annotations manuelles.
-                    L'analyse détaillée de 30 erreurs (15 faux positifs et 15 faux négatifs) met en lumière les limites actuelles :
-                    La moitié des erreurs provient de rires amicaux ou expressifs qui trompent la tête de classification.
-                    Et 30 % des faux négatifs portent sur des tweets politiques ou sportifs impossibles à comprendre sans connaître les événements récents. Pour franchir ce palier, la voie d'avenir n'est pas un plus gros modèle, mais un système RAG couplé aux actualités arabes.
-                </aside>
-            </section>
-
-            <!-- ==========================================
-                 SLIDE 13 : MERCI ET QUESTIONS
-                 ========================================== -->
-            <section style="text-align: center;">
-                <div style="margin-bottom: 20px;">
-                    <span class="badge badge-accent">Fin de Présentation</span>
-                </div>
-                <h2 style="font-size: 2.3em; margin-bottom: 20px;">Merci pour votre attention</h2>
-                <p style="font-size: 1.05em; color: #cbd5e1; margin-bottom: 30px;">
-                    Avez-vous des questions sur les modèles, le protocole ou les résultats ?
-                </p>
-
-                <div class="card" style="max-width: 680px; margin: 0 auto; text-align: left; padding: 20px;">
-                    <div style="font-size: 0.85em; font-weight: 700; color: var(--primary); margin-bottom: 10px;">
-                        Ressources & Reproductibilité Intégrale
-                    </div>
-                    <ul class="clean-list">
-                        <li><strong>Dépôt GitHub public :</strong> <code style="color: var(--text-main);">https://github.com/AbdelhamidRb/tp2-sarcasme-arabe</code></li>
-                        <li><strong>Notebooks exécutables :</strong> 01 à 07 sous Google Colab (GPU T4).</li>
-                        <li><strong>Prédictions & Journal :</strong> <code style="color: var(--text-main);">results/results.csv</code> & prédictions scellées sauvegardées.</li>
-                        <li><strong>Compte-rendu scientifique :</strong> Version LaTeX & PDF disponible selon le template officiel.</li>
-                    </ul>
-                </div>
-
-                <aside class="notes">
-                    Je vous remercie chaleureusement, Monsieur le Professeur Matrane, pour votre écoute et pour la richesse de ce cours de Transformers & LLMs.
-                    L'intégralité du code, des notebooks exécutables et des fichiers de résultats est publique et reproductible sur mon dépôt GitHub.
-                    Je suis désormais à votre entière disposition pour répondre à vos questions et approfondir n'importe quel point technique de ce projet.
+                    Pour conclure, le modèle retenu est MARBERTv2 multi-tâche, appuyé sur son score mesuré de 0,6266 sur le test officiel.
+                    Notre audit qualitatif approfondi met en évidence trois limites structurantes :
+                    Premièrement, le besoin crucial de contexte externe : plus de la moitié des faux négatifs dépendent de l'actualité politique ou sportive, ce qui oriente les perspectives futures vers une architecture RAG.
+                    Deuxièmement, la sous-représentation critique du Maghreb avec 38 tweets, nécessitant des corpus dialectaux dédiés.
+                    Troisièmement, la dérive de prior qui impose une surveillance continue des seuils en production.
+                    Le dépôt GitHub contient l'ensemble du code et des journaux d'expériences. Je vous remercie pour votre attention et suis à votre écoute pour vos questions.
                 </aside>
             </section>
 
@@ -901,18 +1120,13 @@
 
     <script>
         Reveal.initialize({
-            width: 1140,
-            height: 700,
-            margin: 0.06,
-            minScale: 0.2,
-            maxScale: 2.0,
+            width: 1280,
+            height: 720,
+            margin: 0.04,
+            center: false,
             hash: true,
-            slideNumber: 'c/t',
-            transition: 'slide',
-            transitionSpeed: 'default',
-            controls: true,
-            progress: true,
-            center: true,
+            slideNumber: false,
+            transition: 'none',
             plugins: [ RevealNotes ]
         });
     </script>
